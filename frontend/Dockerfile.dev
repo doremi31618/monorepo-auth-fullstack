@@ -1,0 +1,10 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# 複製 package 檔案並安裝依賴
+COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
+RUN npm install
+
+# 把整個 frontend 專案丟進來
+COPY . .

@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  frontend:
+    container_name: app-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    environment:
+      VITE_API_URL: http://localhost:3333
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --strictPort
+    depends_on:
+      - backend
+  
+  backend:
+    container_name: app-backend
+    env_file:
+      - ./backend/.env
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    ports:
+      - "3333:3333"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev 
+    depends_on:
+      - db
+  db:
+    image: postgres:16-alpine
+    container_name: app-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+volumes:
+  db_data:
