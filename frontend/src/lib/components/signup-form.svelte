@@ -41,7 +41,7 @@
 				<Field.Group>
 					<Field.Field>
 						<Button type="submit">Create Account</Button>
-						<Button variant="outline" type="button">Sign up with Google</Button>
+						<!-- <Button variant="outline" type="button">Sign up with Google</Button> -->
 						<Field.Description class="px-6 text-center">
 							Already have an account? <a href="#/">Sign in</a>
 						</Field.Description>

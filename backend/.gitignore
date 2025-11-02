@@ -1,25 +1,20 @@
-# Dependencies and AdonisJS build
+# Dependencies and build output
 node_modules
-build
+dist
 tmp
 
-# Secrets
+# Environment files
 .env
 .env.local
 .env.production.local
 .env.development.local
 
-# Frontend assets compiled code
-public/assets
+# Tooling logs
+npm-debug.log*
+yarn-error.log*
 
-# Build tools specific
-npm-debug.log
-yarn-error.log
-
-# Editors specific
+# Editor and OS files
 .fleet
 .idea
 .vscode
-
-# Platform specific
 .DS_Store
