@@ -2,10 +2,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# 安裝可能需要的 build 依賴 (optional，看你有沒有用到 bcrypt 等編譯套件)
-# RUN apk add --no-cache python3 make g++ openssl
-
 COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
 RUN npm install
 
-COPY . .
+COPY tsconfig*.json nest-cli.json drizzle.config.ts ./
+COPY src ./src
+COPY drizzle ./drizzle
+
+CMD ["npm", "run", "start:dev"]
