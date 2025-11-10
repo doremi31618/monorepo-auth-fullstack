@@ -6,6 +6,10 @@ export const appRoutePath = {
     auth: {
         login: '/auth/login',
         register: '/auth/signup',
+        signout: '/auth/signout',
+    },
+    user: {
+        home: '/user/home',
     }
     
 

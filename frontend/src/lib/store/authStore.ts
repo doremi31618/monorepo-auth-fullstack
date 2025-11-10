@@ -1,49 +1,54 @@
 import { writable, type Writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { goto } from '$app/navigation';
+import { AppConfig } from '$lib/config';
 import * as authAPI from '$lib/api/auth'
-
+import { appRoutePath } from '$lib/config/route';
 export type UserIdentity = {
     id: string;
     email: string;
     name: string;
 }
 
-export type Session = {
-    accessToken: string;
-    expiresAt: number;
-    user: UserIdentity | null;
-    refreshToken: string;
 
+export type AuthStore = {subscribe: Writable<authAPI.UserBasicInfo | null>['subscribe']} & {
+    register: (username: string, email: string, password: string) => Promise<authAPI.Session>;
+    getToken: () => Promise<authAPI.Session | null>;
+    login: (email: string, password: string) => Promise<authAPI.Session>;
+    logout: () => Promise<{userId: number}>;
+    InspectSession: () => Promise<authAPI.Session>;
+    isAuthenticated: () => Promise<boolean>;
+}
+const STORAGE_KEY = AppConfig.sessionStorageKey;
+
+function readFromStorage(): authAPI.Session | null{
+    if (!browser) return null;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    try{
+        const parsed = JSON.parse(raw) as authAPI.Session | string;
+        if (typeof parsed === 'string'){
+            return {
+                userId: 0,
+                name: '',
+                token: parsed
+            };
+        }
+        return parsed;
+    } catch (error) {
+        console.error('Failed to parse session from storage', error);
+        // legacy string format fallback
+        return null;
+    }
 }
 
-export type AuthStore = {subscribe: Writable<Session | null>['subscribe']} & {
-    register: (username: string, email: string, password: string) => Promise<Session>;
-    login: (email: string, password: string) => Promise<Session>;
-    logout: () => Promise<void>;
-    refresh: () => Promise<Session>;
-}
-
-const STORAGE_KEY = 'app.session.v1';
-
-// read from storage, return Session | null
-// function readFromStorage(): Session | null{
-//     if (!browser) return null;
-//     const raw = localStorage.getItem(STORAGE_KEY);
-//     if (!raw) return null;
-
-//     try{
-//         const s = JSON.parse(raw) as Session;
-//         if (s.expiresAt && Date.now() > s.expiresAt) return null;
-//         return s
-//     }catch (error){
-//         console.error('read session error', error);
-//         return null;
-//     }
-// }
-
-function writeToStorage(s: Session | null){
+function writeToStorage(session: authAPI.Session | null){
     if (!browser) return;
-    if (s) localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    if (session){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    } else if (localStorage.getItem(STORAGE_KEY)){
+        localStorage.removeItem(STORAGE_KEY);
+    }
 }
 
 function removeFromStorage(){
@@ -53,39 +58,72 @@ function removeFromStorage(){
 
 
 function createAuthStore(): AuthStore {
-    const {subscribe, set } = writable<Session | null>(null)
+    const initialSession = readFromStorage();
+    const {subscribe, set } = writable<authAPI.Session | null>(initialSession)
 
     return {
         subscribe,
+        async getToken(){
+            return readFromStorage();
+        },
+        async isAuthenticated(){
+            return readFromStorage() !== null;
+        },
+        async InspectSession(){
+            const response = await authAPI.InspectSession();
+            if (response.statusCode !== 200){
+                goto(appRoutePath.user.home);
+            }
+            return response.data as authAPI.Session;
+        },
         async register (_username: string, email: string, _password: string){
-            // use api get session
-            const session = await authAPI.register(_username, email, _password) as Session;
-            // set session to store
-            set(session);
-            // write to storage    
+            const response = await authAPI.register(_username, email, _password);
+            const session = (response.data ?? null) as authAPI.Session | null;
+            if (!session) {
+                throw new Error('Failed to create session during registration');
+            }
+            set({
+                userId: session.userId,
+                name: session.name,
+                token: session.token
+            });
             writeToStorage(session);
-            return session;
+
+            if (response.statusCode == 200){
+                await goto(appRoutePath.user.home);
+            }
+            return response.data as authAPI.Session;
         },
         async login (_email: string, _password: string){
             //api: api/auth/login
-            const session = await authAPI.login(_email, _password) as Session;
-            set(session);
+            const response = await authAPI.login(_email, _password);
+            const session = (response.data ?? null) as authAPI.Session | null;
+            if (!session) {
+                throw new Error('Failed to retrieve session during login');
+            }
+            set({
+                userId: session.userId,
+                name: session.name,
+                token: session.token
+            });
             writeToStorage(session);
-            return session;
+            console.info('login response', response, appRoutePath.user.home);
+            if (response.statusCode == 200){
+                console.info('redirecting to home');
+                await goto(appRoutePath.user.home);
+            }
+            return response.data as authAPI.Session;
         },
         async logout () {
             // api: api/auth/logout
-            await authAPI.logout();
+            const response = await authAPI.logout();
             removeFromStorage();
             set(null);
+            if (response.statusCode == 200){
+                await goto( resolve(appRoutePath.base) );
+            }
+            return { userId: 0 };
         },
-        async refresh (){
-            // api: api/auth/refresh
-            const session = await authAPI.refresh() as Session;
-            set(session);
-            writeToStorage(session);
-            return session;
-        }
     } 
 }
 
