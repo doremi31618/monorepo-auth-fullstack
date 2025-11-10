@@ -4,8 +4,18 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DbModule } from './db/db.module';
 import { AuthModule } from './auth/auth.module';
+import { RepositoryModule } from './repository/repository.module';
+import { UserModule } from './user/user.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { MailModule } from './mail/mail.module';
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), DbModule, AuthModule],
+  imports: [
+    ScheduleModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }), 
+    DbModule, 
+    AuthModule, 
+    RepositoryModule, 
+    UserModule, MailModule],
   controllers: [AppController],
   providers: [AppService],
 })

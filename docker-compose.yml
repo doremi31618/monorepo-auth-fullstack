@@ -33,7 +33,7 @@ services:
       - /app/node_modules
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/postgres
-    command: npm run start:dev
+    command: sh -c "npm install && npm run start:dev"
     depends_on:
       - db
   db:

@@ -1,0 +1,10 @@
+node_modules
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+bun.lockb
+.env
+.env.local
+.env.production.local
+.env.development.local

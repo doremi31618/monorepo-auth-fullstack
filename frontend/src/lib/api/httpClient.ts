@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:3333/';
+import { AppConfig } from '$lib/config';
 
 
 // how to use the httpClient
@@ -22,26 +22,35 @@ const BASE_URL = 'http://localhost:3333/';
 //   });
 //   await addTodo('Buy coffee');
 //--------------------------------
-async function request(path:string, options: RequestInit = {}): Promise<Response> {
+
+export type ApiResponse<T> = {
+    statusCode: number;
+    message: string;
+    data?: T | null;
+    timestamp?: string;
+    path?: string;
+}
+
+async function request<T>(path:string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const token = localStorage.getItem('token')
-    const res = await fetch(`${BASE_URL}${path}`, {
+    const res = await fetch(`${AppConfig.apiBaseUrl}${path}`, {
         ...options,
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `${token}`,
         },
     });
     if (!res.ok) {
         throw new Error(await safeErrorMessage(res));
     }
 
-    return res.json();
+    return res.json() as Promise<ApiResponse<T>>;
 }
 
-async function safeErrorMessage(response: Response): Promise<string> {
+async function safeErrorMessage<T>(response: Response): Promise<string> {
     try {
-        const data = await response.json();
-        return data.message ?? `HTTP ${response.status} error`;
+        const data = await response.json() as ApiResponse<T>;
+        return data.message ?? `HTTP ${data.statusCode} error`;
     } catch (error) {
         console.error(error);
         return `HTTP ${response.status}`;
@@ -49,8 +58,8 @@ async function safeErrorMessage(response: Response): Promise<string> {
 }
 
 export const httpClient = {
-    get:<T>(path:string): Promise<T> => request(path, { method: 'GET' }) as Promise<T>,
-    post:<T>(path:string, data: unknown): Promise<T> => request(path, { method: 'POST', body: JSON.stringify(data) }) as Promise<T>,
-    put:<T>(path:string, data: unknown): Promise<T> => request(path, { method: 'PUT', body: JSON.stringify(data) }) as Promise<T>,
-    delete:<T>(path:string): Promise<T> => request(path, { method: 'DELETE' }) as Promise<T>,
+    get:<T>(path:string):Promise<ApiResponse<T>> => request(path, { method: 'GET' }) as Promise<ApiResponse<T>>,
+    post:<T>(path:string, data: unknown): Promise<ApiResponse<T>> => request(path, { method: 'POST', body: JSON.stringify(data) }) as Promise<ApiResponse<T>>,
+    put:<T>(path:string, data: unknown): Promise<ApiResponse<T>> => request(path, { method: 'PUT', body: JSON.stringify(data) }) as Promise<ApiResponse<T>>,
+    delete:<T>(path:string): Promise<ApiResponse<T>> => request(path, { method: 'DELETE' }) as Promise<ApiResponse<T>>,
 }
