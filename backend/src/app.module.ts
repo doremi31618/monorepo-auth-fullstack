@@ -8,6 +8,7 @@ import { RepositoryModule } from './repository/repository.module';
 import { UserModule } from './user/user.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MailModule } from './mail/mail.module';
+// import { AuthGoogleService } from './auth.google/auth.google.service';
 import appConfig from './config/app.config';
 @Module({
 	imports: [

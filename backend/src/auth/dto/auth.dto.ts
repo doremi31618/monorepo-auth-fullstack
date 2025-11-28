@@ -114,3 +114,22 @@ export class LoginDto {
 	@IsNotEmpty()
 	password!: string;
 }
+
+export class ResetRequestDto {
+	@ApiProperty({ example: 'jane@example.com' })
+	@IsEmail()
+	@IsNotEmpty()
+	email!: string;
+}
+
+export class ResetConfirmDto {
+	@ApiProperty({ example: 'reset-token-uuid' })
+	@IsString()
+	@IsNotEmpty()
+	token!: string;
+
+	@ApiProperty({ example: 'NewStrongPass123!' })
+	@IsString()
+	@IsNotEmpty()
+	password!: string;
+}

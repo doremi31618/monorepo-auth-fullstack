@@ -5,16 +5,21 @@ import {
 	SignupDto,
 	LoginDto,
 	UserIdentityDto,
-	SignoutDto
+	SignoutDto,
+	ResetRequestDto,
+	ResetConfirmDto
 } from './dto/auth.dto';
 import { UserRepository } from 'src/user/user.repository';
 import { SessionRepository } from 'src/auth/repository/session.repository';
+import { MailService } from 'src/mail/mail.service';
+// import { BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly userRepository: UserRepository,
-		private readonly sessionRepository: SessionRepository
+		private readonly sessionRepository: SessionRepository,
+		private readonly mailService: MailService
 	) {}
 
 	async inspectSession(token: string) {
@@ -24,7 +29,7 @@ export class AuthService {
 		}
 		const dto = new SessionDto();
 		dto.userId = session.userId;
-		dto.sessionToken = session.sessionToken;
+		dto.sessionToken = session.token;
 		dto.expiresAt = session.expiresAt;
 		dto.createdAt = session.createdAt;
 		dto.updatedAt = session.updatedAt;
@@ -32,22 +37,23 @@ export class AuthService {
 	}
 
 	async CreateSession(userId: number) {
-		const sessionToken = crypto.randomUUID();
+		const _sessionToken = crypto.randomUUID();
+		const _refreshToken = crypto.randomUUID();
 
 		const [session, refreshToken] = await Promise.all([
 			this.sessionRepository.createSession({
 				userId: userId,
-				sessionToken: sessionToken,
+				sessionToken: _sessionToken,
 				expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
 			}),
-			this.sessionRepository.createRefreshToken(sessionToken, userId)
+			this.sessionRepository.createRefreshToken(_refreshToken, userId)
 		]);
 		if (!session || !refreshToken) {
 			throw new BadRequestException(
 				'Failed to create session or refresh token'
 			);
 		}
-		return { sessionToken, refreshToken };
+		return { sessionToken: session, refreshToken: refreshToken };
 	}
 
 	async signout(sessionToken: string) {
@@ -88,7 +94,7 @@ export class AuthService {
 
 		return {
 			data: new UserIdentityDto(
-				sessionToken,
+				sessionToken.sessionToken,
 				refreshToken.refreshToken,
 				user.id,
 				user.name
@@ -97,18 +103,24 @@ export class AuthService {
 	}
 
 	async refresh(_refreshToken: string) {
-		const { userId } =
-			(await this.sessionRepository.deleteRefreshToken(_refreshToken)) ?? null;
-		if (!userId) {
-			throw new BadRequestException('Invalid refresh token');
-		}
-		const { sessionToken, refreshToken } = await this.CreateSession(userId);
-		return {
-			data: {
-				sessionToken,
-				refreshToken
+		try {
+			const { userId } =
+				(await this.sessionRepository.deleteRefreshToken(_refreshToken)) ?? null;
+			if (!userId) {
+				throw new BadRequestException('Invalid refresh token');
 			}
-		};
+			const { sessionToken, refreshToken } = await this.CreateSession(userId);
+			return {
+				data: {
+					sessionToken,
+					refreshToken
+				}
+			};
+		}
+		catch (error) {
+			console.error('refresh failed', error);
+			throw error;
+		}
 	}
 
 	async signup(signupDto: SignupDto) {
@@ -133,11 +145,52 @@ export class AuthService {
 
 		return {
 			data: new UserIdentityDto(
-				sessionToken,
+				sessionToken.sessionToken,
 				refreshToken.refreshToken,
 				user.id,
 				user.name
 			)
+		};
+	}
+
+	async requestPasswordReset(dto: ResetRequestDto) {
+		const user = await this.userRepository.getUserByEmail(dto.email);
+		if (!user) {
+			throw new BadRequestException('User not found');
+		}
+		const token = await this.sessionRepository.createResetToken(
+			user.id,
+			1000 * 60 * 5
+		);
+		const resetLink = `${process.env.FRONTEND_URL}/auth/reset?token=${token.token}`;
+		try {
+			await this.mailService.sendResetPasswordEmail(user.email, resetLink);
+		} catch (error) {
+			// 如果寄信失敗，仍回傳連結以便手動測試
+			console.error('sendResetPasswordEmail failed', error);
+		}
+		return {
+			data: {
+				token: token.token,
+				expiresAt: token.expiresAt,
+				resetLink
+			}
+		};
+	}
+
+	async resetPassword(dto: ResetConfirmDto) {
+		const consumed = await this.sessionRepository.consumeResetToken(dto.token);
+		if (!consumed) {
+			throw new BadRequestException('Invalid or expired reset token');
+		}
+		const hashedPassword = await bcrypt.hash(dto.password, 10);
+		await this.userRepository.updatePassword(consumed.userId, hashedPassword);
+		await this.sessionRepository.deleteAllTokensByUser(consumed.userId);
+		return {
+			data: {
+				userId: consumed.userId,
+				redirect: `${process.env.FRONTEND_URL}/auth/login`
+			}
 		};
 	}
 }

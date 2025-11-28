@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { type DB } from 'src/db/db';
 import { schema } from 'src/db/schema';
 import { lt, eq, and, gt } from 'drizzle-orm';
@@ -9,6 +10,12 @@ export type CreateSession = {
 	expiresAt: Date;
 };
 
+const TOKEN_TYPE = {
+	SESSION: 'session',
+	REFRESH: 'refresh',
+	RESET: 'reset_password'
+} as const;
+
 @Injectable()
 export class SessionRepository {
 	constructor(@Inject('DB') private readonly db: DB) {}
@@ -16,11 +23,11 @@ export class SessionRepository {
 	async deleteRefreshToken(refreshToken: string) {
 		try {
 			const deletedRefreshToken = await this.db
-				.delete(schema.authModel.refreshTokens)
-				.where(eq(schema.authModel.refreshTokens.refreshToken, refreshToken))
+				.delete(schema.authModel.authTokens)
+				.where(eq(schema.authModel.authTokens.token, refreshToken))
 				.returning({
-					userId: schema.authModel.refreshTokens.userId,
-					refreshToken: schema.authModel.refreshTokens.refreshToken
+					userId: schema.authModel.authTokens.userId,
+					refreshToken: schema.authModel.authTokens.token
 				});
 			return deletedRefreshToken[0] ?? null;
 		} catch (error) {
@@ -31,9 +38,9 @@ export class SessionRepository {
 	async getUserIdByRefreshToken(refreshToken: string) {
 		try {
 			const userId = await this.db
-				.select({ userId: schema.authModel.refreshTokens.userId })
-				.from(schema.authModel.refreshTokens)
-				.where(eq(schema.authModel.refreshTokens.refreshToken, refreshToken));
+				.select({ userId: schema.authModel.authTokens.userId })
+				.from(schema.authModel.authTokens)
+				.where(eq(schema.authModel.authTokens.token, refreshToken));
 			return userId[0] ?? null;
 		} catch (error) {
 			console.error('getUserIdByRefreshToken failed', error);
@@ -43,9 +50,9 @@ export class SessionRepository {
 	async getUserIdByToken(sessionToken: string) {
 		try {
 			const userId = await this.db
-				.select({ userId: schema.authModel.userSessions.userId })
-				.from(schema.authModel.userSessions)
-				.where(eq(schema.authModel.userSessions.sessionToken, sessionToken));
+				.select({ userId: schema.authModel.authTokens.userId })
+				.from(schema.authModel.authTokens)
+				.where(eq(schema.authModel.authTokens.token, sessionToken));
 			return userId[0] ?? null;
 		} catch (error) {
 			console.error('getUserIdByToken failed', error);
@@ -67,10 +74,10 @@ export class SessionRepository {
 	async deleteRefreshTokens(useId: number) {
 		try {
 			const deletedRefreshTokens = await this.db
-				.delete(schema.authModel.refreshTokens)
-				.where(eq(schema.authModel.refreshTokens.userId, useId))
+				.delete(schema.authModel.authTokens)
+				.where(eq(schema.authModel.authTokens.userId, useId))
 				.returning({
-					refreshToken: schema.authModel.refreshTokens.refreshToken
+					refreshToken: schema.authModel.authTokens.token
 				});
 			return deletedRefreshTokens[0] ?? null;
 		} catch (error) {
@@ -82,16 +89,17 @@ export class SessionRepository {
 	async createRefreshToken(refreshToken: string, userId: number) {
 		try {
 			const newRefreshToken = await this.db
-				.insert(schema.authModel.refreshTokens)
+				.insert(schema.authModel.authTokens)
 				.values({
-					refreshToken: refreshToken,
+					type: TOKEN_TYPE.REFRESH,
+					token: refreshToken,
 					userId: userId,
 					expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
 				})
 				.returning({
-					refreshToken: schema.authModel.refreshTokens.refreshToken,
-					userId: schema.authModel.refreshTokens.userId,
-					expiresAt: schema.authModel.refreshTokens.expiresAt
+					refreshToken: schema.authModel.authTokens.token,
+					userId: schema.authModel.authTokens.userId,
+					expiresAt: schema.authModel.authTokens.expiresAt
 				});
 			return newRefreshToken[0] ?? null;
 		} catch (error) {
@@ -104,11 +112,11 @@ export class SessionRepository {
 		try {
 			const token = await this.db
 				.select()
-				.from(schema.authModel.userSessions)
+				.from(schema.authModel.authTokens)
 				.where(
 					and(
-						eq(schema.authModel.userSessions.sessionToken, sessionToken),
-						gt(schema.authModel.userSessions.expiresAt, new Date(Date.now()))
+						eq(schema.authModel.authTokens.token, sessionToken),
+						gt(schema.authModel.authTokens.expiresAt, new Date(Date.now()))
 					)
 				);
 			return token[0] ?? null;
@@ -121,17 +129,18 @@ export class SessionRepository {
 	async createSession(session: CreateSession) {
 		try {
 			const [newSession] = await this.db
-				.insert(schema.authModel.userSessions)
+				.insert(schema.authModel.authTokens)
 				.values({
+					type: TOKEN_TYPE.SESSION,
 					userId: session.userId,
-					sessionToken: session.sessionToken,
+					token: session.sessionToken,
 					expiresAt: session.expiresAt
 				})
 				.returning({
 					//id: schema.authModel.userSessions.id,
-					userId: schema.authModel.userSessions.userId,
-					sessionToken: schema.authModel.userSessions.sessionToken,
-					expiresAt: schema.authModel.userSessions.expiresAt
+					userId: schema.authModel.authTokens.userId,
+					sessionToken: schema.authModel.authTokens.token,
+					expiresAt: schema.authModel.authTokens.expiresAt
 				});
 			return newSession;
 		} catch (error) {
@@ -142,10 +151,10 @@ export class SessionRepository {
 	async deleteSessionByUserId(userId: number) {
 		try {
 			const deletedSession = await this.db
-				.delete(schema.authModel.userSessions)
-				.where(eq(schema.authModel.userSessions.userId, userId))
+				.delete(schema.authModel.authTokens)
+				.where(eq(schema.authModel.authTokens.userId, userId))
 				.returning({
-					sessionToken: schema.authModel.userSessions.sessionToken
+					sessionToken: schema.authModel.authTokens.token
 				});
 			if (deletedSession.length === 0) {
 				return null;
@@ -159,11 +168,11 @@ export class SessionRepository {
 	async deleteSessionByToken(sessionToken: string) {
 		try {
 			const deletedSession = await this.db
-				.delete(schema.authModel.userSessions)
-				.where(eq(schema.authModel.userSessions.sessionToken, sessionToken))
+				.delete(schema.authModel.authTokens)
+				.where(eq(schema.authModel.authTokens.token, sessionToken))
 				.returning({
-					id: schema.authModel.userSessions.sessionToken,
-					userId: schema.authModel.userSessions.userId
+					id: schema.authModel.authTokens.token,
+					userId: schema.authModel.authTokens.userId
 				});
 			return deletedSession[0] ?? null;
 		} catch (error) {
@@ -175,12 +184,12 @@ export class SessionRepository {
 	async deleteExpiredRefreshTokens() {
 		try {
 			const deletedRefreshTokens = await this.db
-				.delete(schema.authModel.refreshTokens)
+				.delete(schema.authModel.authTokens)
 				.where(
-					lt(schema.authModel.refreshTokens.expiresAt, new Date(Date.now()))
+					lt(schema.authModel.authTokens.expiresAt, new Date(Date.now()))
 				)
 				.returning({
-					refreshToken: schema.authModel.refreshTokens.refreshToken
+					refreshToken: schema.authModel.authTokens.token
 				});
 			return deletedRefreshTokens[0] ?? null;
 		} catch (error) {
@@ -193,16 +202,87 @@ export class SessionRepository {
 		try {
 			console.info('cleanupExpiredSessions started');
 			const deletedSessions = await this.db
-				.delete(schema.authModel.userSessions)
+				.delete(schema.authModel.authTokens)
 				.where(
-					lt(schema.authModel.userSessions.expiresAt, new Date(Date.now()))
+					lt(schema.authModel.authTokens.expiresAt, new Date(Date.now()))
 				)
 				.returning({
-					id: schema.authModel.userSessions.sessionToken
+					id: schema.authModel.authTokens.token
 				});
 			return `clean up ${deletedSessions.length} sessions`;
 		} catch (error) {
 			console.error('cleanupExpiredSessions failed', error);
+			throw error;
+		}
+	}
+
+	async deleteResetTokensByUser(userId: number) {
+		try {
+			await this.db
+				.delete(schema.authModel.authTokens)
+				.where(
+					and(
+						eq(schema.authModel.authTokens.userId, userId),
+						eq(schema.authModel.authTokens.type, TOKEN_TYPE.RESET)
+					)
+				);
+		} catch (error) {
+			console.error('deleteResetTokensByUser failed', error);
+			throw error;
+		}
+	}
+
+	async deleteAllTokensByUser(userId: number) {
+		try {
+			await this.db
+				.delete(schema.authModel.authTokens)
+				.where(eq(schema.authModel.authTokens.userId, userId));
+		} catch (error) {
+			console.error('deleteAllTokensByUser failed', error);
+			throw error;
+		}
+	}
+
+	async createResetToken(userId: number, ttlMs: number) {
+		try {
+			await this.deleteResetTokensByUser(userId);
+			const tokenValue = crypto.randomUUID();
+			const [token] = await this.db
+				.insert(schema.authModel.authTokens)
+				.values({
+					userId,
+					token: tokenValue,
+					type: TOKEN_TYPE.RESET,
+					expiresAt: new Date(Date.now() + ttlMs)
+				})
+				.returning({
+					token: schema.authModel.authTokens.token,
+					expiresAt: schema.authModel.authTokens.expiresAt
+				});
+			return token;
+		} catch (error) {
+			console.error('createResetToken failed', error);
+			throw error;
+		}
+	}
+
+	async consumeResetToken(token: string) {
+		try {
+			const [row] = await this.db
+				.delete(schema.authModel.authTokens)
+				.where(
+					and(
+						eq(schema.authModel.authTokens.token, token),
+						eq(schema.authModel.authTokens.type, TOKEN_TYPE.RESET),
+						gt(schema.authModel.authTokens.expiresAt, new Date(Date.now()))
+					)
+				)
+				.returning({
+					userId: schema.authModel.authTokens.userId
+				});
+			return row ?? null;
+		} catch (error) {
+			console.error('consumeResetToken failed', error);
 			throw error;
 		}
 	}

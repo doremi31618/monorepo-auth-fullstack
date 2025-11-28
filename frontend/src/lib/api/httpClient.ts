@@ -149,42 +149,53 @@ async function rawRequest(path: string, options: RequestInit = {}): Promise<Resp
 
 // try request with refresh token if 401
 async function request<T>(path: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    const res = await rawRequest(path, options);
+    try {
+        const res = await rawRequest(path, options);
 
-    if (res.ok) {
-        return res.json() as Promise<ApiResponse<T>>;
-    }
+        if (res.ok) {
+            const { body } = await safeParse<ApiResponse<T>>(res);
+            return body as ApiResponse<T>;
+        }
 
-    const { body: data, parsed } = await safeParse<ApiResponse<T>>(res);
-    const isUnauthorized =
-        res.status === 401 || data?.statusCode === 401 || data?.error === 'Unauthorized';
+        const { body: data, parsed } = await safeParse<ApiResponse<T>>(res);
+        const isUnauthorized =
+            res.status === 401 || data?.statusCode === 401 || data?.error === 'Unauthorized';
 
-    if (isUnauthorized) {
-        const newToken = await refreshToken();
-        if (!newToken) {
+        if (isUnauthorized) {
+            const newToken = await refreshToken();
+            if (!newToken) {
+                throw {
+                    error: 'Failed to refresh token',
+                    statusCode: 401,
+                    message: 'Failed to refresh token',
+                };
+            }
+            const retryResponse = await rawRequest(path, { ...options });
+            if (retryResponse.ok) {
+                const { body: retryBody } = await safeParse<ApiResponse<T>>(retryResponse);
+                return retryBody as ApiResponse<T>;
+            }
+            const { body: retryData, parsed: retryParsed } = await safeParse<ApiResponse<T>>(retryResponse);
             throw {
-                error: 'Failed to refresh token',
-                statusCode: 401,
-                message: 'Failed to refresh token',
+                error: await safeErrorMessage(retryResponse, retryData ?? undefined, retryParsed),
+                statusCode: retryData?.statusCode ?? retryResponse.status,
+                message: retryData?.message ?? await safeErrorMessage(retryResponse, retryData ?? undefined, retryParsed),
             };
         }
-        const retryResponse = await rawRequest(path, { ...options });
-        if (retryResponse.ok) {
-            return retryResponse.json() as Promise<ApiResponse<T>>;
-        }
-        const { body: retryData, parsed: retryParsed } = await safeParse<ApiResponse<T>>(retryResponse);
-        throw {
-            error: await safeErrorMessage(retryResponse, retryData ?? undefined, retryParsed),
-            statusCode: retryData?.statusCode ?? retryResponse.status,
-            message: retryData?.message ?? await safeErrorMessage(retryResponse, retryData ?? undefined, retryParsed),
-        };
-    }
 
-    throw {
-        error: await safeErrorMessage(res, data ?? undefined, parsed),
-        statusCode: data?.statusCode ?? res.status,
-        message: data?.message ?? await safeErrorMessage(res, data ?? undefined, parsed),
-    };
+        throw {
+            error: await safeErrorMessage(res, data ?? undefined, parsed),
+            statusCode: data?.statusCode ?? res.status,
+            message: data?.message ?? await safeErrorMessage(res, data ?? undefined, parsed),
+        };
+    } catch (error) {
+        const fallback = {
+            error: 'network_error',
+            statusCode: 500,
+            message: 'Network issue: Failed to make request',
+        };
+        throw typeof error === 'object' && error !== null ? { ...fallback, ...error } : fallback;
+    }
 }
 
 type SafeParseResult<T> = { body: T | null; parsed: boolean };
