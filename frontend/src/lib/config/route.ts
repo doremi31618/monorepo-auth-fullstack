@@ -1,6 +1,6 @@
 
 
- 
+
 export const appRoutePath = {
     base: '/',
     auth: {
@@ -13,4 +13,4 @@ export const appRoutePath = {
     }
     
 
-}
+} as const;
