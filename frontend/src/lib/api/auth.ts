@@ -29,3 +29,11 @@ export async function logout(){
 export async function refresh(){
     return await httpClient.post<Session>('/auth/refresh', {});
 }
+
+export async function requestPasswordReset(email: string) {
+    return await httpClient.post<{ token: string; expiresAt: string; resetLink: string }>('/auth/reset/request', { email });
+}
+
+export async function confirmPasswordReset(token: string, password: string) {
+    return await httpClient.post<{ userId: number; redirect?: string }>('/auth/reset/confirm', { token, password });
+}

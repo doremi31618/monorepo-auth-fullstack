@@ -7,8 +7,9 @@ import { SessionCleanupService } from 'src/auth/session-cleanup.service';
 import { DbModule } from 'src/db/db.module';
 import { GoogleService } from './google/google.service';
 import { GoogleController } from './google/google.controller';
+import { MailModule } from 'src/mail/mail.module';
 @Module({
-	imports: [UserModule, DbModule],
+	imports: [UserModule, DbModule, MailModule],
 	controllers: [AuthController, GoogleController],
 	providers: [
 		AuthService,

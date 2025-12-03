@@ -23,7 +23,9 @@ import {
 	LoginDto,
 	SignupDto,
 	UserIdentityDto,
-	SignoutDto
+	SignoutDto,
+	ResetRequestDto,
+	ResetConfirmDto
 } from 'src/auth/dto/auth.dto';
 import { Response, Request } from 'express';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -172,5 +174,19 @@ export class AuthController {
 				sessionToken: result.data.sessionToken
 			}
 		};
+	}
+
+	@Post('reset/request')
+	@HttpCode(HttpStatus.OK)
+	@ApiOperation({ summary: 'Request password reset' })
+	async requestReset(@Body() dto: ResetRequestDto) {
+		return this.authService.requestPasswordReset(dto);
+	}
+
+	@Post('reset/confirm')
+	@HttpCode(HttpStatus.OK)
+	@ApiOperation({ summary: 'Confirm password reset' })
+	async confirmReset(@Body() dto: ResetConfirmDto) {
+		return this.authService.resetPassword(dto);
 	}
 }

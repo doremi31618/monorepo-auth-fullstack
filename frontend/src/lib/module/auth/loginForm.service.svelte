@@ -63,7 +63,7 @@
 				<Field data-invalid={Boolean(apiError)}>
 					<div class="flex items-center">
 						<FieldLabel for="password-{id}">Password</FieldLabel>
-						<a href="##" class="ml-auto inline-block text-sm underline">
+						<a href={appRoutePath.auth.forgotPassword} class="ml-auto inline-block text-sm underline">
 							Forgot your password?
 						</a>
 					</div>

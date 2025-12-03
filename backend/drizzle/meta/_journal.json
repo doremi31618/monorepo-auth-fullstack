@@ -29,6 +29,27 @@
       "when": 1763175257109,
       "tag": "0003_parallel_lord_hawal",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1764741218996,
+      "tag": "0004_chilly_tattoo",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1764745517208,
+      "tag": "0005_cloudy_blackheart",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1764751776884,
+      "tag": "0006_peaceful_vapor",
+      "breakpoints": true
     }
   ]
 }

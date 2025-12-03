@@ -56,4 +56,18 @@ export class UserRepository {
 			});
 		return newUser;
 	}
+
+	async updatePassword(userId: number, hashedPassword: string) {
+		const [updated] = await this.db
+			.update(schema.userModel.users)
+			.set({
+				password: hashedPassword,
+				updatedAt: new Date()
+			})
+			.where(eq(schema.userModel.users.id, userId))
+			.returning({
+				id: schema.userModel.users.id
+			});
+		return updated ?? null;
+	}
 }

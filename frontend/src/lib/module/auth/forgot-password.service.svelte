@@ -22,8 +22,9 @@
 	// 	FieldSeparator,
 	// } from "$lib/components/ui/field/index.js";
     import { page } from "$app/stores";
-    import { authStore } from "$lib/store/authStore";
-	import { Input } from "$lib/components/ui/input/index.js";
+    import { goto } from "$app/navigation";
+    import * as authApi from "$lib/api/auth";
+    import { Input } from "$lib/components/ui/input/index.js";
 	// import { Button } from "$lib/components/ui/button/index.js";
 	import { cn, type WithElementRef } from "$lib/utils.js";
 
@@ -37,62 +38,34 @@
 
     let emailParam = $page.url.searchParams.get('email');
     let email = $state(emailParam || '');
-
+    let resetToken: string | null = $state(null);
+    let resetLink: string | null = $state(null);
+    let expiresAt: string | null = $state(null);
     let isLoading = $state(false);
-
-    // async function forgotPassword(email: string) {
-    //     const response = await authStore.forgotPassword(email);
-    //     return response.data;
-    // }
+    let errorMsg: string | null = $state(null);
+    let successMsg: string | null = $state(null);
 
     async function handleSubmit(event: Event) {
         event.preventDefault();
         isLoading = true;
-        // await forgotPassword(email);
-        // isLoading = false;
-        // if (response.success) {
-        //     navigate(appRoutePath.auth.login);
-        // }
+        errorMsg = null;
+        try {
+            const res = await authApi.requestPasswordReset(email);
+            if (res.statusCode !== 201 && res.statusCode !== 200) {
+                throw new Error(res.message ?? 'Request failed');
+            }
+            resetToken = res.data?.token ?? null;
+            expiresAt = res.data?.expiresAt ?? null;
+            resetLink = res.data?.resetLink ?? (resetToken ? `/auth/reset?token=${resetToken}` : null);
+            successMsg = "If an account exists, we've sent a reset link to your email.";
+        } catch (err) {
+            errorMsg = (err as Error)?.message ?? 'Failed to request reset';
+        } finally {
+            isLoading = false;
+        }
     }
 </script>
 
-{#if isLoading}
-<Card.Root >
-	<Card.Header>
-		<Card.Title>Enter verification code</Card.Title>
-		<Card.Description>We sent a 6-digit code to {email}</Card.Description>
-	</Card.Header>
-	<Card.Content>
-		<form>
-			<Field.Group>
-				<Field.Field>
-					<Field.Label for="otp">Verification code</Field.Label>
-					<InputOTP.Root maxlength={6} id="otp" required>
-						{#snippet children({ cells })}
-							<InputOTP.Group
-								class="gap-2.5 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border"
-							>
-								{#each cells as cell (cell)}
-									<InputOTP.Slot {cell} />
-								{/each}
-							</InputOTP.Group>
-						{/snippet}
-					</InputOTP.Root>
-					<Field.Description>
-						Enter the 6-digit code sent to your email.
-					</Field.Description>
-				</Field.Field>
-				<Field.Group>
-					<Button type="submit">Verify</Button>
-					<Field.Description class="text-center">
-						Didn't receive the code? <a href="#/">Resend</a>
-					</Field.Description>
-				</Field.Group>
-			</Field.Group>
-		</form>
-	</Card.Content>
-</Card.Root>
-{:else}
 <div class={cn("flex flex-col gap-6", className)} bind:this={ref} {...restProps}>
 	<form>
 		<Field.Group>
@@ -112,11 +85,25 @@
 				<Field.Label for="email-{id}">Email</Field.Label>
 				<Input id="email-{id}" bind:value={email} type="email" placeholder="m@example.com" required />
 			</Field.Field>
+			{#if errorMsg}
+				<Field.Description class="text-red-500">{errorMsg}</Field.Description>
+			{/if}
 			<Field.Field>
-				<Button type="submit" onclick={handleSubmit}>Send</Button>
+				<Button type="submit" onclick={handleSubmit} disabled={isLoading}>
+					{#if isLoading}Sending...{:else}Send{/if}
+				</Button>
 			</Field.Field>
+			{#if successMsg}
+				<Field.Description class="text-sm text-muted-foreground">
+					{successMsg}
+				</Field.Description>
+			{/if}
+			{#if resetLink}
+				<Field.Description class="text-xs text-muted-foreground">
+					Dev link (valid until {expiresAt ?? 'soon'}): <a class="text-primary underline" href={resetLink}>{resetLink}</a>
+				</Field.Description>
+			{/if}
 			
 		</Field.Group>
 	</form>
 </div>
-{/if}
