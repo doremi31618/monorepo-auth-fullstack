@@ -130,6 +130,26 @@ Release milestone
 
 ⸻
 
+Refactor plan（共享契約導入順序）
+ • 確認 Nx target 可跑：nx build/test/lint/graph；/scripts 是否映射 Nx。
+ • 建立 shared 契約套件（建議 libs/contracts）：API path 常數 + Auth/User DTO/type。
+ • Backend 導入 shared：Nest DTO 使用 shared 型別（必要時 class-validator wrapper）、更新 tsconfig path，清理重複定義。
+ • Frontend 導入 shared：tsconfig alias 指向 shared；API client/型別統一從 shared 取得。
+ • 資料層拆分：auth/user schema 依 Domain/Infra/Feature 拆至 core；Drizzle aggregator 僅 infra/db 使用。
+ • 品質與 CI：Nx tags/lint 邊界驗證；CI 改用 nx build/test/lint/type-check。
+
+Todo checklist
+ - [ x ] 跑 nx build backend / nx build frontend / nx graph 確認工作區正常
+ - [ ] 建立 shared 套件（libs/contracts 或同等路徑），定義 Auth/User 契約與 API base path
+ - [ ] Backend DTO/Swagger 改用 shared 型別，補 class-validator wrapper 並更新 tsconfig path
+ - [ ] Frontend tsconfig alias 指向 shared，API client 型別改用 shared，移除重複介面
+ - [ ] 拆分 auth/user schema 至 core 層級並更新 Drizzle aggregator 與 repository import
+ - [ ] 設定 Nx tags + lint 邊界（scope:infra-core/domain-core/feature），跑 lint/graph 驗證
+ - [ ] 將 /scripts 映射 Nx target；CI 改用 nx run（build/test/lint/type-check）
+ - [ ] 驗收後標記 Core v0.1.0 baseline
+
+⸻
+
 Deliverables
  • Pre-M1 monorepo bootstrap（root package.json + pnpm workspace + Nx init + scripts → Nx target/alias）。
  • Domain Core + Infra Core structure in backend/src/core.

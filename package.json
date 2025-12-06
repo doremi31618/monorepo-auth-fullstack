@@ -7,7 +7,9 @@
         "build": "nx run-many --target=build",
         "test": "nx run-many --target=test",
         "lint": "nx run-many --target=lint",
-        "graph": "nx graph"
+        "graph": "nx graph",
+        "backend": "nx start backend",
+        "frontend": "nx start frontend"
     },
     "workspaces": [
         "backend",
