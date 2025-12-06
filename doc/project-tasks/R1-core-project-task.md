@@ -9,21 +9,27 @@ Core Module Progress Report (Milestone 1)
 
 Last updated: 2025-12-05
 
-This document tracks the R1-core refactor（Domain Core + Infra Core + Nx），並包含新增的開發規範交付物。
+Review action：依 2025-12-05 review，先完成「Pre-M1 Monorepo Bootstrap」（Nx init + workspace + `/scripts` → Nx），再進入 Core 重構與模組遷移。
 
 ⸻
 
 🎯 Acceptance Criteria（R1-core）
 
+**Pre-M1 — Monorepo Bootstrap**
+•	root package.json + pnpm-workspace.yaml + lockfile；Nx init 完成並註冊 backend/frontend app。
+•	`/scripts` 改為 Nx target 或 npm script alias 指向 nx；nx graph/lint 可執行（tags scaffold 就緒）。
+
+**Core Refactor & Governance**
 1. Core 結構與邊界：backend/src/core 下完成 core/domain/user（schema/repo/service/IUserService）與 core/infra（config/db/logger/auth-base/utils）；Feature → Domain → Infra；禁止 Feature 直接使用 core/infra/db/schema.ts；Nx graph 無循環依賴。
 2. Config system：schema 驗證、typed getter、移除隨處 process.env。
 3. Database layer：BaseEntity、BaseRepository、transaction helper；User domain fully on BaseRepository；Schema 按 Domain/Infra/Feature 分層；Drizzle aggregator 只收集 schema。
 4. Logger & Error：JSON logger；GlobalExceptionFilter；LoggingInterceptor。
 5. Auth Base：IUserService + UserIdentity；AuthGuardBase；@CurrentUser decorator；正確依賴 UserService（Domain Core）。
 6. Shared utilities：pagination/date/id 等至少被兩個 module 使用。
-7. Nx Workspace：Nx init；backend/frontend apps；tags scope:domain-core / scope:infra-core / scope:feature；Nx graph 驗證依賴方向。
-8. CI/CD（Nx runner）：build/test/lint 改用 Nx；啟用 Nx cache；預留 nx affected。
+7. Nx Workspace：tags scope:infra-core/scope:domain-core/scope:feature；Lint boundary rules；nx graph 驗證依賴方向（Nx init 已於 Pre-M1 完成）。
+8. CI/CD（Nx runner）：build/test/lint 改用 Nx；啟用 Nx cache；預留 nx affected；CI 指令透過 Nx target（含 /scripts 映射）。
 9. 開發規範文件：DEVELOPMENT_GUIDE.md，含 Schema Ownership、Module Boundary、命名/結構、DI 原則、禁止 import aggregator schema、Commit/PR checklist、如何新增 domain/feature module。
+10. 模組遷移：`src/user` → `core/domain/user`；`src/auth` → `core/infra/auth`；`src/db/schema.ts` 拆分並更新 Drizzle aggregator；import 更新且 nx graph/lint 無違規。
 
 ⸻
 
@@ -31,6 +37,7 @@ Product Feature Spec
 
 | Feature / capability | Status | Notes |
 | --- | --- | --- |
+| Pre-M1 Monorepo bootstrap | ⏳ Planned | Root package.json + pnpm workspaces + lockfile；Nx init with backend/frontend apps；scripts → Nx target/alias；nx graph runnable. |
 | Core structure (Domain + Infra) | ⏳ Planned | backend/src/core split into core/domain and core/infra with enforced boundaries. |
 | Domain Core (User) | ⏳ Planned | User schema/repository/service; implements IUserService for AuthBase and feature modules. |
 | Config system | ⏳ Planned | ConfigModule with schema validation, environment profiles, typed getters; no direct process.env. |
@@ -38,14 +45,15 @@ Product Feature Spec
 | Logger & error handling | ⏳ Planned | JSON logger, LoggingInterceptor, GlobalExceptionFilter with unified envelope. |
 | Auth base (non-RBAC) | ⏳ Planned | UserIdentity, IUserService token, AuthGuardBase, @CurrentUser decorator; Domain Core supplies IUserService. |
 | Shared utilities | ⏳ Planned | Pagination/date/id utilities reused by ≥2 modules. |
-| Nx Workspace (backend + frontend) | ⏳ Planned | Nx init; apps registered; tags scope:infra-core/scope:domain-core/scope:feature; lint boundary rules. |
-| CI/CD on Nx | ⏳ Planned | CI pipeline uses nx build/test/lint; Nx cache enabled; nx affected wired for future use. |
+| Nx Workspace (backend + frontend) | ⏳ Planned | Tags scope:infra-core/scope:domain-core/scope:feature; lint boundary rules; nx graph after migration confirms direction; Nx init done in Pre-M1. |
+| CI/CD on Nx | ⏳ Planned | CI pipeline uses nx build/test/lint; Nx cache enabled; nx affected wired for future use; legacy scripts mapped to Nx target. |
 | Development guidelines | ⏳ Planned | DEVELOPMENT_GUIDE.md covering schema ownership, module boundaries, DI, naming/structure, PR checklist. |
+| Migration (auth/user + schema) | ⏳ Planned | src/user → core/domain/user；src/auth → core/infra/auth；src/db/schema.ts split; imports updated; Nx graph clean. |
 
 ⸻
 
 Overall status snapshot
- • ⏳ In Progress / Planned: Domain Core（User）、Infra Core（config/db/logger/auth-base/utils）、Nx init + boundary lint、DEVELOPMENT_GUIDE、CI migration to Nx。
+ • ⏳ In Progress / Planned: Pre-M1 monorepo bootstrap（Nx init + scripts 映射）、Domain Core（User）、Infra Core（config/db/logger/auth-base/utils）、Nx tags + boundary lint、DEVELOPMENT_GUIDE、CI migration to Nx、auth/user/schema migration。
  • ❌ Not Started: Core extraction to shared library（future milestone）、downstream integrations、release tagging。
 
 ⸻
@@ -55,6 +63,7 @@ Architecture & governance（R1-core alignment）
 Core layering
  • Feature Modules → Domain Core → Infra Core
  • Domain Core consumes Infra Core；Feature Modules consume Domain Core；no upward dependencies。
+ • 執行順序：先完成 Pre-M1（Nx init + workspace + scripts 映射），再開始 Core 重構與模組遷移。
 
 Schema ownership
  • Domain schemas：core/domain/...
@@ -80,6 +89,12 @@ Packaging strategy
 
 TODO (WBS) — ordered by dependency
 
+Pre-M1 Monorepo bootstrap（先做，避免搬檔案前導）
+ • 建立 root package.json、pnpm-workspace.yaml、lockfile。
+ • Nx init + 註冊 backend/frontend apps；加上基本 build/test/lint target。
+ • 將 `/scripts` 轉為 Nx target 或 script alias；更新 README/開發指令。
+ • 跑 nx graph/format/lint 確認 workspace 正常。
+
 Infra Core foundation
  • [infra/config] ConfigModule with schema validation, typed getters; remove direct env access.
  • [infra/db] Drizzle setup, BaseEntity/BaseRepository, runInTransaction; layered schemas; aggregator limited to DB usage.
@@ -90,12 +105,17 @@ Infra Core foundation
 Domain Core (User)
  • [domain/user] UserEntity schema; UserRepository extends BaseRepository; UserService implements IUserService.
 
+Migration: existing modules（auth/user + schema）
+ • 移動 src/user → core/domain/user；更新 import/path + Nx tags。
+ • 移動 src/auth → core/infra/auth；守住只依賴 IUserService。
+ • 拆分 src/db/schema.ts 為 domain/infra/feature schemas；更新 Drizzle aggregator；清理舊引用。
+ • 跑 nx graph/lint 確認無循環與邊界違規。
+
 Integration: CoreModule
  • Wire Infra Core + Domain Core under CoreModule; replace ad-hoc infra usage in backend modules。
 
-Nx Workspace
- • nx init; register backend/frontend apps.
- • Add tags scope:infra-core / scope:domain-core / scope:feature and lint boundary rules; validate with nx graph.
+Nx Workspace（邊界治理）
+ • Add tags scope:infra-core / scope:domain-core / scope:feature and lint boundary rules; validate with nx graph after遷移。
 
 Documentation & governance
  • Write DEVELOPMENT_GUIDE.md（schema ownership、module boundaries、DI、命名/結構、commit/PR checklist、how to add domain/feature modules）。
@@ -103,26 +123,29 @@ Documentation & governance
 
 CI/CD migration to Nx
  • Switch CI jobs to nx build/test/lint; enable Nx cache; add nx affected pipeline scaffold.
+ • 將 legacy scripts 的 CI 入口改為 Nx target。
 
 Release milestone
- • Tag core v0.1.0 after acceptance checks; smoke test core usage in backend modules.
+ • Tag core v0.1.0 after acceptance checks; smoke test core usage in backend modules。
 
 ⸻
 
 Deliverables
+ • Pre-M1 monorepo bootstrap（root package.json + pnpm workspace + Nx init + scripts → Nx target/alias）。
  • Domain Core + Infra Core structure in backend/src/core.
- • Layered schema governance（domain/infra/feature）+ Drizzle aggregator in core/infra/db/schema.ts.
- • Nx workspace with tags + boundary lint + graph validation.
- • CI/CD using Nx runner + cache; nx affected ready.
- • DEVELOPMENT_GUIDE.md covering project conventions.
- • Core v0.1.0 baseline.
+ • Layered schema governance（domain/infra/feature）+ Drizzle aggregator in core/infra/db/schema.ts。
+ • Nx workspace with tags + boundary lint + graph validation。
+ • CI/CD using Nx runner + cache；nx affected ready。
+ • Migration 完成（auth/user + schema 拆分 + import 更新）。
+ • DEVELOPMENT_GUIDE.md covering project conventions。
+ • Core v0.1.0 baseline。
 
 ⸻
 
 Roadmap position
 | Milestone | 名稱 | 狀態 | 內容摘要 |
 |-----------|------|--------|------------|
-| **1** | Core（Domain + Infra）建立、Schema 治理、Nx 初始化 | ⏳ 進行中 | Core 架構重整、DB Schema Boundary、Nx、CI/CD、開發規範 |
+| **1** | Core（Domain + Infra）＋ Monorepo Bootstrap、Schema 治理、Nx 初始化 | ⏳ 進行中 | Pre-M1 Nx init + scripts 整合 → Core 架構重整、DB Schema Boundary、Nx、CI/CD、開發規範 |
 
 ⸻
 

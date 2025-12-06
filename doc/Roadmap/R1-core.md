@@ -9,6 +9,8 @@
 
 Updated: 2025-12-05
 
+🆕 Review action：依 2025-12-05 review，M1 拆為「Pre-M1 Monorepo Bootstrap」→「M1 Core 重構與遷移」，先把 monorepo 與 Nx runner 站穩，再搬移模組。
+
 ⸻
 
 ## 🎯 Goal（目標）
@@ -24,6 +26,7 @@ Updated: 2025-12-05
 	•	完整抽象 Drizzle、config、logging、exception、transaction 等底層能力
 
 3. Nx Workspace（1 backend + 1 frontend）
+	•	Pre-M1：根目錄 package.json + pnpm workspaces + Nx init，在移動程式碼前先完成。
 	•	建立 Module Boundary（Feature → Domain → Infra）
 	•	提供未來擴展第二後端服務時可抽離 Core 的基礎
 
@@ -41,6 +44,18 @@ Updated: 2025-12-05
 目標是：除了寫 code，更要確保 1 年後的團隊仍然能按照同樣的規範維護專案。
 
 ⸻
+
+## 🗺️ Phase & Execution Order（依 review 調整）
+
+1. Pre-M1 — Monorepo Bootstrap
+	•	Nx/Turborepo（二選一，預設 Nx）初始化；root package.json、pnpm-workspace.yaml、lockfile 就緒。
+	•	backend / frontend app 註冊到 Nx；基礎 build/test/lint target 可跑；nx graph 可視覺化依賴。
+	•	`/scripts` 腳本映射到 Nx target 或 script alias，確保 CI/開發都走 Nx runner。
+
+2. M1 — Core 重構與遷移
+	•	建立 core/domain + core/infra 分層、邊界治理。
+	•	既有模組遷移：`src/user` → `core/domain/user`；`src/auth` → `core/infra/auth`；`src/db/schema.ts` 依 Domain/Infra/Feature 拆分。
+	•	完成 Config/DB/Logger/Auth Base/Utilities、CI、開發規範。
 
 ⸻
 
@@ -90,8 +105,13 @@ core/infra/db/schema.ts
 
 ⸻
 
-✅ Acceptance Criteria（驗收）
+## ✅ Acceptance Criteria（驗收）
 
+**Pre-M1 — Monorepo Bootstrap**
+•	root package.json + pnpm-workspace.yaml + lockfile 完成；Nx init 並註冊 backend/frontend app。
+•	Nx tags/lint scaffold 建立；nx graph 可執行；`/scripts` 腳本轉為 Nx target（或 npm script alias 指向 nx），開發/CI 以 nx run 為入口。
+
+**M1 — Core Refactor & Governance**
 1. Core（Domain + Infra）結構完成
 
 backend/src/core 包含：
@@ -170,7 +190,6 @@ Schema 驗收細項：
 7. Nx Workspace
 
 完成：
-•	Nx init
 •	backend + frontend 註冊
 •	core/domain, core/infra, feature modules 加上 Nx tags
 ```
@@ -179,7 +198,7 @@ scope:infra-core
 scope:feature
 ```
 
-•	nx graph 驗證依賴方向正確
+•	phase gate：Nx init 與基本 targets 已在 Pre-M1 完成；重構後以 nx graph 驗證依賴方向正確
 
 ⸻
 
@@ -205,10 +224,26 @@ scope:feature
 	•	Commit message / PR review checklist
 	•	如何新增一個 domain／feature module
 
+⸻
+
+10. 模組遷移完成（Migration Strategy）
+
+完成：
+	•	`src/user` → `core/domain/user`（schema / repository / service / IUserService）
+	•	`src/auth` → `core/infra/auth`（guard/decorator 依賴 IUserService，不反向依賴 feature）
+	•	`src/db/schema.ts` 拆分為 Domain/Infra/Feature schemas 並更新 Drizzle aggregator
+	•	更新 import 路徑、刪除舊 aggregator 依賴，Nx graph/lint 無違規
 
 ⸻
 
 ## 🎯 Strategy → Actions（行動計畫）
+
+Strategy 0 — Monorepo Bootstrap（Pre-M1，新增）
+	•	Nx init（backend/frontend app），root package.json + pnpm-workspace.yaml + lockfile。
+	•	將 `/scripts` 轉成 Nx target 或 npm script alias 指向 nx。
+	•	建立基本 nx.json / project.json targets，確認 build/test/lint 可跑後再開始搬檔案。
+
+⸻
 
 Strategy A — Core 分層與架構重建
 	•	建立 core/domain & core/infra
@@ -245,8 +280,7 @@ Strategy E — Auth Base
 ⸻
 
 Strategy F — Nx Workspace
-	•	Nx init
-	•	設置 tags + lint rules
+	•	Nx init 已於 Pre-M1 完成；此階段加上 tags + lint rules
 	•	nx graph 驗證邊界
 
 ⸻
@@ -271,12 +305,22 @@ Strategy H — 專案開發規範（New） ⭐
 
 ⸻
 
+Strategy I — 既有模組遷移（Auth/User）
+	•	src/user → core/domain/user（schema/repository/service/IUserService）
+	•	src/auth → core/infra/auth（依賴 IUserService，不反向依賴 feature）
+	•	src/db/schema.ts 拆分並更新 Drizzle aggregator；刪除 feature 對 aggregator 的依賴
+	•	跑 nx graph / lint 確認無循環與違規引用
+
+⸻
+
 📦 Deliverables（產出物）
+	•	Pre-M1：monorepo bootstrap 完成（root package.json + pnpm workspace + Nx init + `/scripts` 映射 Nx target）
 	•	Domain Core + Infra Core 架構
 	•	Schema 治理（domain / infra / feature）
 	•	Drizzle aggregator（core/infra/db/schema.ts）
 	•	Nx Workspace + tags + lint rules
 	•	CI/CD（Nx runner）
+	•	既有模組遷移完成（auth/user，schema 拆分）
 	•	Core v0.1.0 baseline
 	•	DEVELOPMENT_GUIDE.md（開發規範文件）
 
@@ -286,10 +330,7 @@ Strategy H — 專案開發規範（New） ⭐
 
 | Milestone | 名稱 | 狀態 | 內容摘要 |
 |-----------|------|--------|------------|
-| **1** | Core（Domain + Infra）建立、Schema 治理、Nx 初始化 | ⏳ 進行中 | Core 架構重整、DB Schema Boundary、Nx、CI/CD、開發規範 |# 🧭 Roadmap 位置
-
-
-
+| **1** | Core（Domain + Infra）＋ Monorepo Bootstrap、Schema 治理、Nx 初始化 | ⏳ 進行中 | Pre-M1 Nx init + scripts 整合 → Core 架構重整、DB Schema Boundary、Nx、CI/CD、開發規範 |
 
 ⸻
 
