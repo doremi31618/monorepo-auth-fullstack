@@ -1,19 +1,15 @@
-以下是 重新整理後的新版文件，
-對齊 R1-core 需求，並加入「開發規範文件」作為必交付項。
 
-你可以直接取代原本的文件。
 
 ⸻
 
-Core Module Progress Report (Milestone 1)
+# Core Module Progress Report (Milestone 1)
 
 Last updated: 2025-12-05
 
 Review action：依 2025-12-05 review，先完成「Pre-M1 Monorepo Bootstrap」（Nx init + workspace + `/scripts` → Nx），再進入 Core 重構與模組遷移。
 
-⸻
 
-🎯 Acceptance Criteria（R1-core）
+## 🎯 Acceptance Criteria（R1-core）
 
 **Pre-M1 — Monorepo Bootstrap**
 •	root package.json + pnpm-workspace.yaml + lockfile；Nx init 完成並註冊 backend/frontend app。
@@ -33,7 +29,7 @@ Review action：依 2025-12-05 review，先完成「Pre-M1 Monorepo Bootstrap」
 
 ⸻
 
-Product Feature Spec
+## Product Feature Spec
 
 | Feature / capability | Status | Notes |
 | --- | --- | --- |
@@ -52,94 +48,59 @@ Product Feature Spec
 
 ⸻
 
-Overall status snapshot
+## Overall status snapshot
  • ⏳ In Progress / Planned: Pre-M1 monorepo bootstrap（Nx init + scripts 映射）、Domain Core（User）、Infra Core（config/db/logger/auth-base/utils）、Nx tags + boundary lint、DEVELOPMENT_GUIDE、CI migration to Nx、auth/user/schema migration。
  • ❌ Not Started: Core extraction to shared library（future milestone）、downstream integrations、release tagging。
 
 ⸻
 
-Architecture & governance（R1-core alignment）
+## Architecture & governance（R1-core alignment）
 
-Core layering
+**Core layering**
  • Feature Modules → Domain Core → Infra Core
  • Domain Core consumes Infra Core；Feature Modules consume Domain Core；no upward dependencies。
  • 執行順序：先完成 Pre-M1（Nx init + workspace + scripts 映射），再開始 Core 重構與模組遷移。
 
-Schema ownership
+**Schema ownership**
  • Domain schemas：core/domain/...
  • Infra schemas：core/infra/...
  • Feature schemas：modules/<feature>/...
  • Each schema owned by its module；domain schema 不放在 feature；infra schema 僅提供底層支援。
 
-Drizzle schema aggregator
+**Drizzle schema aggregator**
  • core/infra/db/schema.ts 只提供給 Drizzle client/migration。
  • 不 export *；不是 feature 的 entry point；禁止外部依賴 aggregator。
 
-Nx tags & boundary rules
+**Nx tags & boundary rules**
  • core/infra/* → scope:infra-core
  • core/domain/* → scope:domain-core
  • modules/* → scope:feature
  • Rules: feature → domain/infra；domain-core → infra；infra-core → no domain/feature。
 
-Packaging strategy
+**Packaging strategy**
  • Milestone 1：Core 保留在 backend/src/core。
  • Future milestone：第二個 backend 出現後再抽成共享 library（libs/core 或 @app/core）。
 
 ⸻
 
-TODO (WBS) — ordered by dependency
-
-Pre-M1 Monorepo bootstrap（先做，避免搬檔案前導）
- • 建立 root package.json、pnpm-workspace.yaml、lockfile。
- • Nx init + 註冊 backend/frontend apps；加上基本 build/test/lint target。
- • 將 `/scripts` 轉為 Nx target 或 script alias；更新 README/開發指令。
- • 跑 nx graph/format/lint 確認 workspace 正常。
-
-Infra Core foundation
- • [infra/config] ConfigModule with schema validation, typed getters; remove direct env access.
- • [infra/db] Drizzle setup, BaseEntity/BaseRepository, runInTransaction; layered schemas; aggregator limited to DB usage.
- • [infra/logger] JSON CoreLogger, LoggingInterceptor, GlobalExceptionFilter.
- • [infra/auth-base] UserIdentity, IUserService token, AuthGuardBase, @CurrentUser decorator.
- • [infra/utils] Shared utilities (pagination/date/id) reused across modules.
-
-Domain Core (User)
- • [domain/user] UserEntity schema; UserRepository extends BaseRepository; UserService implements IUserService.
-
-Migration: existing modules（auth/user + schema）
- • 移動 src/user → core/domain/user；更新 import/path + Nx tags。
- • 移動 src/auth → core/infra/auth；守住只依賴 IUserService。
- • 拆分 src/db/schema.ts 為 domain/infra/feature schemas；更新 Drizzle aggregator；清理舊引用。
- • 跑 nx graph/lint 確認無循環與邊界違規。
-
-Integration: CoreModule
- • Wire Infra Core + Domain Core under CoreModule; replace ad-hoc infra usage in backend modules。
-
-Nx Workspace（邊界治理）
- • Add tags scope:infra-core / scope:domain-core / scope:feature and lint boundary rules; validate with nx graph after遷移。
-
-Documentation & governance
- • Write DEVELOPMENT_GUIDE.md（schema ownership、module boundaries、DI、命名/結構、commit/PR checklist、how to add domain/feature modules）。
- • Add boundary lint checks to CI.
-
-CI/CD migration to Nx
- • Switch CI jobs to nx build/test/lint; enable Nx cache; add nx affected pipeline scaffold.
- • 將 legacy scripts 的 CI 入口改為 Nx target。
-
-Release milestone
- • Tag core v0.1.0 after acceptance checks; smoke test core usage in backend modules。
-
-⸻
-
-Refactor plan（共享契約導入順序）
- • 確認 Nx target 可跑：nx build/test/lint/graph；/scripts 是否映射 Nx。
- • 建立 shared 契約套件（建議 libs/contracts）：API path 常數 + Auth/User DTO/type。
- • Backend 導入 shared：Nest DTO 使用 shared 型別（必要時 class-validator wrapper）、更新 tsconfig path，清理重複定義。
- • Frontend 導入 shared：tsconfig alias 指向 shared；API client/型別統一從 shared 取得。
- • 資料層拆分：auth/user schema 依 Domain/Infra/Feature 拆至 core；Drizzle aggregator 僅 infra/db 使用。
- • 品質與 CI：Nx tags/lint 邊界驗證；CI 改用 nx build/test/lint/type-check。
+## Tech Spec — Shared API/DTO（Auth）
+ • 契約套件：libs/contracts（importPath 建議 @monorepo/contracts），只放 TS interface/type + route 常數；Nest DTO 維持 class-validator decorator，透過 implements shared interface 取代重複型別。
+ • Response envelope：ApiResponse<T> = { statusCode: number; message: string; data?: T | null; error?: string | null; timestamp?: string; path?: string }（backend/src/common/response/response.interceptor.ts 與 frontend/src/lib/api/httpClient.ts 需共用）。
+ • API/DTO 需搬到 shared/auth：
+   - POST /auth/login → AuthLoginRequest { email; password }；Response AuthSession { token: string; refreshToken?: string; userId: number; name: string }（backend LoginDto/UserIdentityDto；frontend Session）。
+   - POST /auth/signup → AuthSignupRequest { email; password; name }；Response AuthSession 同上。
+   - POST /auth/signout → Bearer token；Response AuthSignoutResponse { userId: number }（backend SignoutDto；frontend logout 回傳 { userId }）。
+   - GET /auth/inspect → Bearer token；Response AuthSessionInspect { token: string; refreshToken?: string; userId: number; expiresAt: string; createdAt: string; updatedAt: string; name?: string }（backend SessionDto.sessionToken 對應 token，補 name/refreshToken 時可沿用）。
+   - POST /auth/refresh → Cookie refreshToken；Response AuthRefreshResponse { token: string; refreshToken?: string }（目前 backend 傳 sessionToken；frontend 期望 token，需統一欄位）。
+   - POST /auth/reset/request → PasswordResetRequest { email }；Response PasswordResetRequestResponse { token: string; expiresAt: string; resetLink: string }。
+   - POST /auth/reset/confirm → PasswordResetConfirmRequest { token; password }；Response PasswordResetConfirmResponse { userId: number; redirect?: string }。
+   - Google OAuth login/signup/callback：為瀏覽器 redirect 流程，不需共享 DTO。
+ • Frontend 清理：$lib/api/auth.ts（Session, UserBasicInfo）、$lib/api/httpClient.ts（ApiResponse）改由 shared 匯入；authStore 狀態沿用 shared.AuthSession。
+ • Backend 對齊：Login/Signup/Reset* DTO implements 對應 shared request；SessionDto/UserIdentityDto/SignoutDto implements shared response 並用 @ApiProperty/@Is* decorator；sessionToken → token 命名需對齊 shared。
+ • Nx build 接線：nx g @nx/js:lib contracts --directory=libs --importPath=@monorepo/contracts --projectNameAndRootFormat=as-provided --bundler=tsc（或同等生成指令）；在 libs/contracts/src/index.ts 匯出契約並於 backend/frontend tsconfig 加上 path alias；CI/root 指令改為 nx run-many --target=build --projects=contracts,backend,frontend（或 --all），並在 targetDefaults.build.dependsOn 含 "^build" 以確保 contracts 先建置。
 
 Todo checklist
- - [ x ] 跑 nx build backend / nx build frontend / nx graph 確認工作區正常
+ - [x] 跑 nx build backend / nx build frontend / nx graph 確認工作區正常
  - [ ] 建立 shared 套件（libs/contracts 或同等路徑），定義 Auth/User 契約與 API base path
  - [ ] Backend DTO/Swagger 改用 shared 型別，補 class-validator wrapper 並更新 tsconfig path
  - [ ] Frontend tsconfig alias 指向 shared，API client 型別改用 shared，移除重複介面
@@ -162,13 +123,67 @@ Deliverables
 
 ⸻
 
-Roadmap position
+## TODO (WBS) — ordered by dependency
+
+**Pre-M1 Monorepo bootstrap**
+ • 建立 root package.json、pnpm-workspace.yaml、lockfile。
+ • Nx init + 註冊 backend/frontend apps；加上基本 build/test/lint target。
+ • 將 `/scripts` 轉為 Nx target 或 script alias；更新 README/開發指令。
+ • 跑 nx graph/format/lint 確認 workspace 正常。
+
+**Infra Core foundation**
+ • [infra/config] ConfigModule with schema validation, typed getters; remove direct env access.
+ • [infra/db] Drizzle setup, BaseEntity/BaseRepository, runInTransaction; layered schemas; aggregator limited to DB usage.
+ • [infra/logger] JSON CoreLogger, LoggingInterceptor, GlobalExceptionFilter.
+ • [infra/auth-base] UserIdentity, IUserService token, AuthGuardBase, @CurrentUser decorator.
+ • [infra/utils] Shared utilities (pagination/date/id) reused across modules.
+
+**Domain Core (User)**
+ • [domain/user] UserEntity schema; UserRepository extends BaseRepository; UserService implements IUserService.
+
+**Migration: existing modules（auth/user + schema）**
+ • 移動 src/user → core/domain/user；更新 import/path + Nx tags。
+ • 移動 src/auth → core/infra/auth；守住只依賴 IUserService。
+ • 拆分 src/db/schema.ts 為 domain/infra/feature schemas；更新 Drizzle aggregator；清理舊引用。
+ • 跑 nx graph/lint 確認無循環與邊界違規。
+
+**Integration: CoreModule**
+ • Wire Infra Core + Domain Core under CoreModule; replace ad-hoc infra usage in backend modules。
+
+**Nx Workspace（邊界治理）**
+ • Add tags scope:infra-core / scope:domain-core / scope:feature and lint boundary rules; validate with nx graph after遷移。
+
+**Documentation & governance**
+ • Write DEVELOPMENT_GUIDE.md（schema ownership、module boundaries、DI、命名/結構、commit/PR checklist、how to add domain/feature modules）。
+ • Add boundary lint checks to CI.
+
+**CI/CD migration to Nx**
+ • Switch CI jobs to nx build/test/lint; enable Nx cache; add nx affected pipeline scaffold.
+ • 將 legacy scripts 的 CI 入口改為 Nx target。
+
+**Release milestone**
+ • Tag core v0.1.0 after acceptance checks; smoke test core usage in backend modules。
+
+⸻
+
+**Refactor plan（共享契約導入順序）**
+ • 確認 Nx target 可跑：nx build/test/lint/graph；/scripts 是否映射 Nx。
+ • 建立 shared 契約套件（建議 libs/contracts）：API path 常數 + Auth/User DTO/type。
+ • Backend 導入 shared：Nest DTO 使用 shared 型別（必要時 class-validator wrapper）、更新 tsconfig path，清理重複定義。
+ • Frontend 導入 shared：tsconfig alias 指向 shared；API client/型別統一從 shared 取得。
+ • 資料層拆分：auth/user schema 依 Domain/Infra/Feature 拆至 core；Drizzle aggregator 僅 infra/db 使用。
+ • 品質與 CI：Nx tags/lint 邊界驗證；CI 改用 nx build/test/lint/type-check。
+
+⸻
+
+
+## Roadmap position
 | Milestone | 名稱 | 狀態 | 內容摘要 |
 |-----------|------|--------|------------|
 | **1** | Core（Domain + Infra）＋ Monorepo Bootstrap、Schema 治理、Nx 初始化 | ⏳ 進行中 | Pre-M1 Nx init + scripts 整合 → Core 架構重整、DB Schema Boundary、Nx、CI/CD、開發規範 |
 
 ⸻
 
-Working Diary
+## Working Diary
 
 No entries yet for Milestone 1; populate as implementation progresses.

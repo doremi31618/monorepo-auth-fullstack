@@ -6,7 +6,9 @@ import {
 	IsDate
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+// import { SessionDto } from '@share/contract';
 
+// export SessionDto
 export class SessionDto {
 	@ApiProperty({ example: 1 })
 	@IsNumber()

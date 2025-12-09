@@ -26,6 +26,7 @@
  * ```
  */
 declare module '$env/static/private' {
+	export const ANTIGRAVITY_AGENT: string;
 	export const NVM_INC: string;
 	export const TERM_PROGRAM: string;
 	export const NODE: string;
@@ -52,22 +53,25 @@ declare module '$env/static/private' {
 	export const VSCODE_PROFILE_INITIALIZED: string;
 	export const __CF_USER_TEXT_ENCODING: string;
 	export const npm_execpath: string;
+	export const PAGER: string;
 	export const PATH: string;
 	export const npm_package_json: string;
+	export const _: string;
 	export const npm_config_userconfig: string;
 	export const npm_config_init_module: string;
 	export const USER_ZDOTDIR: string;
 	export const __CFBundleIdentifier: string;
-	export const NX_RUNNING_NX_INIT: string;
 	export const npm_command: string;
 	export const PWD: string;
 	export const npm_lifecycle_event: string;
 	export const EDITOR: string;
+	export const npm_package_name: string;
 	export const LANG: string;
 	export const npm_config_npm_version: string;
 	export const VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
 	export const XPC_FLAGS: string;
 	export const npm_config_node_gyp: string;
+	export const npm_package_version: string;
 	export const XPC_SERVICE_NAME: string;
 	export const VSCODE_INJECTION: string;
 	export const ANTIGRAVITY_CLI_ALIAS: string;
@@ -83,15 +87,14 @@ declare module '$env/static/private' {
 	export const BUN_INSTALL: string;
 	export const NVM_BIN: string;
 	export const npm_config_user_agent: string;
-	export const INFOPATH: string;
-	export const HOMEBREW_CELLAR: string;
 	export const VSCODE_GIT_ASKPASS_NODE: string;
 	export const GIT_ASKPASS: string;
+	export const INFOPATH: string;
+	export const HOMEBREW_CELLAR: string;
 	export const OSLogRateLimit: string;
 	export const npm_node_execpath: string;
 	export const npm_config_prefix: string;
 	export const COLORTERM: string;
-	export const _: string;
 	export const NX_CLI_SET: string;
 	export const NX_VERBOSE_LOGGING: string;
 	export const NX_INTERACTIVE: string;
@@ -130,6 +133,7 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		ANTIGRAVITY_AGENT: string;
 		NVM_INC: string;
 		TERM_PROGRAM: string;
 		NODE: string;
@@ -156,22 +160,25 @@ declare module '$env/dynamic/private' {
 		VSCODE_PROFILE_INITIALIZED: string;
 		__CF_USER_TEXT_ENCODING: string;
 		npm_execpath: string;
+		PAGER: string;
 		PATH: string;
 		npm_package_json: string;
+		_: string;
 		npm_config_userconfig: string;
 		npm_config_init_module: string;
 		USER_ZDOTDIR: string;
 		__CFBundleIdentifier: string;
-		NX_RUNNING_NX_INIT: string;
 		npm_command: string;
 		PWD: string;
 		npm_lifecycle_event: string;
 		EDITOR: string;
+		npm_package_name: string;
 		LANG: string;
 		npm_config_npm_version: string;
 		VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
 		XPC_FLAGS: string;
 		npm_config_node_gyp: string;
+		npm_package_version: string;
 		XPC_SERVICE_NAME: string;
 		VSCODE_INJECTION: string;
 		ANTIGRAVITY_CLI_ALIAS: string;
@@ -187,15 +194,14 @@ declare module '$env/dynamic/private' {
 		BUN_INSTALL: string;
 		NVM_BIN: string;
 		npm_config_user_agent: string;
-		INFOPATH: string;
-		HOMEBREW_CELLAR: string;
 		VSCODE_GIT_ASKPASS_NODE: string;
 		GIT_ASKPASS: string;
+		INFOPATH: string;
+		HOMEBREW_CELLAR: string;
 		OSLogRateLimit: string;
 		npm_node_execpath: string;
 		npm_config_prefix: string;
 		COLORTERM: string;
-		_: string;
 		NX_CLI_SET: string;
 		NX_VERBOSE_LOGGING: string;
 		NX_INTERACTIVE: string;
