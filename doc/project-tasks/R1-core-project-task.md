@@ -37,7 +37,7 @@ Review action：依 2025-12-05 review，先完成「Pre-M1 Monorepo Bootstrap」
 | Core structure (Domain + Infra) | 🔄 In Progress | backend/src/core split into core/domain and core/infra with enforced boundaries. |
 | Domain Core (User) | ⏳ Planned | User schema/repository/service; implements IUserService for AuthBase and feature modules. |
 | Config system | ⏳ Planned | ConfigModule with schema validation, environment profiles, typed getters; no direct process.env. |
-| Database layer (Drizzle) | ⏳ Planned | DatabaseModule, Drizzle setup, BaseEntity/BaseRepository, runInTransaction; schema split by layer; aggregator only for DB client/migration. |
+| Database layer (Drizzle) | 🔄 In Progress | DatabaseModule, Drizzle setup, BaseEntity/BaseRepository, runInTransaction; schema split by layer; aggregator only for DB client/migration. |
 | Logger & error handling | ⏳ Planned | JSON logger, LoggingInterceptor, GlobalExceptionFilter with unified envelope. |
 | Auth base (non-RBAC) | ⏳ Planned | UserIdentity, IUserService token, AuthGuardBase, @CurrentUser decorator; Domain Core supplies IUserService. |
 | Shared utilities | 🔄 In Progress | Pagination/date/id utilities; **Shared HttpClient/StorageService (@share/sdk)**; reused by ≥2 modules. |
@@ -237,3 +237,7 @@ Deliverables
   - Fixed `bcrypt` type definition errors in backend.
   - Resolved `auth.service.spec.ts` unit test failure (`Expected 1 arguments, but got 0` in mock).
   - Addressed `browser` global variable type error in frontend types.
+
+- **DB Schema Architecture**:
+  - Refactored `drizzle.config.ts` to use glob patterns (`src/**/*.schema.ts`) for automatic schema discovery during migrations.
+  - Verified with `db:generate` and build checks.

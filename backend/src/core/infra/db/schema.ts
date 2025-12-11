@@ -1,6 +1,6 @@
-import * as userModel from './schema/userModel';
-import * as authModel from './schema/authModel';
-import * as mailModel from './schema/mailModel';
+import * as userModel from '../../domain/user/user.schema';
+import * as authModel from '../../domain/auth/auth.schema';
+import * as mailModel from '../mail/mail.schema';
 
 export { userModel, authModel, mailModel };
 export const schema = {
@@ -9,6 +9,6 @@ export const schema = {
 	mailModel
 };
 
-export * from './schema/userModel';
-export * from './schema/authModel';
-export * from './schema/mailModel';
+export * from '../../domain/user/user.schema';
+export * from '../../domain/auth/auth.schema';
+export * from '../mail/mail.schema';

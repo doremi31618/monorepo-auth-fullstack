@@ -1,5 +1,5 @@
 import { integer, pgTable, text, timestamp, pgEnum } from 'drizzle-orm/pg-core';
-import { users } from './userModel';
+import { users } from '../user/user.schema';
 
 
 const tokenType = pgEnum('auth_token_type', ['session', 'refresh', 'reset_password']);
