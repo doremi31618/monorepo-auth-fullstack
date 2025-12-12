@@ -1,26 +1,33 @@
 import { Injectable, Logger , Inject } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { type DB, schema } from '../db/db.js';
+// import { ConfigService } from '@nestjs/config';
+import mailConfig from './mail.config.js';
+import { type ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class MailService {
 	private readonly logger = new Logger(MailService.name);
 	private readonly transporter: nodemailer.Transporter;
 
-	constructor(@Inject('DB') private readonly db: DB) {
+	private readonly from: string;
+	constructor(
+		@Inject(mailConfig.KEY) private readonly config: ConfigType<typeof mailConfig>,
+		@Inject('DB') private readonly db: DB) {
+		this.from = this.config.from;
 		this.transporter = nodemailer.createTransport({
-			host: process.env.SMTP_HOST,
-			port: Number(process.env.SMTP_PORT ?? 465),
+			host: this.config.host,
+			port: Number(this.config.port),
 			secure: true,
 			auth: {
-				user: process.env.SMTP_USER,
-				pass: process.env.SMTP_PASS
+				user: this.config.user,
+				pass: this.config.pass
 			}
 		});
 	}
 
 	async sendResetPasswordEmail(to: string, resetLink: string) {
-		const from = process.env.MAIL_FROM ?? process.env.SMTP_USER;
+		const from = this.from;
 		const subject = 'Reset your password';
 		const html = `
 			<p>You requested a password reset.</p>

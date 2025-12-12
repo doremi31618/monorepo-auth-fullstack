@@ -6,6 +6,8 @@ import { AuthService } from '../auth.service.js';
 import { UserRepository } from '../../user/user.repository.js';
 import { type DB, schema } from '../../../infra/db/db.js';
 import { and, eq } from 'drizzle-orm';
+import authConfig from '../auth.config.js';
+import { type ConfigType } from '@nestjs/config';
 
 type FlowMode = 'login' | 'signup';
 
@@ -13,16 +15,22 @@ type FlowMode = 'login' | 'signup';
 export class GoogleService {
 	private readonly loginRedirect: string;
 	private readonly signupRedirect: string;
-	private readonly clientId = process.env.GOOGLE_SSO_CLIENT_ID;
-	private readonly clientSecret = process.env.GOOGLE_SSO_CLIENT_SECRET;
+
+	private hostUrl: string;
+	private clientId: string;
+	private clientSecret: string;
 
 	constructor(
+		@Inject(authConfig.KEY) private readonly config: ConfigType<typeof authConfig>,
 		private readonly authService: AuthService,
 		private readonly userRepository: UserRepository,
 		@Inject('DB') private readonly db: DB
 	) {
-		this.loginRedirect = `${process.env.HOST_URL}/auth/google/login/callback`;
-		this.signupRedirect = `${process.env.HOST_URL}/auth/google/signup/callback`;
+		this.clientId = this.config.googleClient;
+		this.clientSecret = this.config.googleSecret;
+		this.hostUrl = this.config.hostUrl;
+		this.loginRedirect = `${this.hostUrl}/auth/google/login/callback`;
+		this.signupRedirect = `${this.hostUrl}/auth/google/signup/callback`;
 	}
 
 	getLoginAuthUrl() {

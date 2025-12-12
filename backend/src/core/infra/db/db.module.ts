@@ -1,11 +1,27 @@
 import { Module } from '@nestjs/common';
-import { db, pool } from './db.js';
-
+import { createDB, createPool } from './db.js';
+import { Pool } from 'pg';
+import { ConfigService } from '@nestjs/config';
 @Module({
 	providers: [
-		{ provide: 'DB', useValue: db },
-		{ provide: 'PG_POOL', useValue: pool }
+		{ 
+			provide: 'PG_POOL', 
+			useFactory: (configService: ConfigService) => {
+				const connectingString = configService.getOrThrow('DATABASE_URL');
+				return createPool(connectingString);
+			},
+			inject: [ConfigService]
+		},
+
+		{
+			provide: 'DB',
+			useFactory: (pool: Pool) => {
+				return createDB(pool);
+			},
+
+			inject: ['PG_POOL']
+		},
 	],
 	exports: ['DB', 'PG_POOL']
 })
-export class DbModule {}
+export class DbModule { }

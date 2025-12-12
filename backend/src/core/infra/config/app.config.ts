@@ -6,7 +6,6 @@ export type AppConfig = {
 	protocol: string;
 	baseUrl: string;
 };
-
 export default registerAs('app', (): AppConfig => {
 	const port = process.env.PORT ? Number(process.env.PORT) : 3333;
 	const protocol = process.env.API_PROTOCOL ?? 'http';

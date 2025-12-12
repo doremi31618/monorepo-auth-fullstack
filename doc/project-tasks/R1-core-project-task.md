@@ -106,7 +106,7 @@ Todo checklist
  - [x] Frontend tsconfig alias 指向 shared，API client 型別改用 shared，移除重複介面
  - [x] 拆分 auth/user schema 至 core 層級並更新 Drizzle aggregator 與 repository import
  - [x] 設定 Nx tags + lint 邊界（scope:infra-core/domain-core/feature），跑 lint/graph 驗證 <!-- id: 5 -->
- - [ ] **Config System**: 實作 Schema/Validation (Zod/Joi) 並移除直接 env 存取
+ - [x] **Config System**: 實作 Schema/Validation (Zod/Joi) 並移除直接 env 存取
  - [ ] **Logger & Error Handling**: 實作 JSON Logger, GlobalExceptionFilter, LoggingInterceptor
  - [ ] **Domain Core Implementation**: 實作 BaseRepository, UserRepository, 並調整 AuthModule 依賴 IUserService
  - [ ] **Auth Base Refinement**: 確認 @CurrentUser 與 UserIdentity 標準化
@@ -137,8 +137,8 @@ Deliverables
  • 跑 nx graph/format/lint 確認 workspace 正常。
 
 **Infra Core foundation**
- • [infra/config] ConfigModule with schema validation, typed getters; remove direct env access.
- • [infra/db] Drizzle setup, BaseEntity/BaseRepository, runInTransaction; layered schemas; aggregator limited to DB usage.
+ • [x] [infra/config] ConfigModule with schema validation, typed getters; remove direct env access.
+ • [x] [infra/db] Drizzle setup, BaseEntity/BaseRepository, runInTransaction; layered schemas; aggregator limited to DB usage.
  • [infra/logger] JSON CoreLogger, LoggingInterceptor, GlobalExceptionFilter.
  • [infra/auth-base] UserIdentity, IUserService token, AuthGuardBase, @CurrentUser decorator.
  • [infra/utils] Shared utilities (pagination/date/id) reused across modules.
@@ -274,3 +274,22 @@ Deliverables
   - Updated `docker-compose.yml` build context to Root (`.`) and mapped workspaces volumes.
   - Refactored `Dockerfile.dev` (Backend & Frontend) to copy full monorepo context (Root package.json + `share/` dir).
   - Configured build to skip `package-lock.json` copying to force fresh workspace resolution inside containers.
+
+### 2025-12-12
+
+- **Environment Configuration Refactoring**:
+  - Implemented centralized environment validation using Zod in `src/core/infra/config/env.validation.ts`.
+  - Refactored `AppModule` to use `ConfigModule` with strict schema validation; removed direct `process.env` usage.
+  - Created domain-specific config files:
+    - `auth.config.ts`: Google SSO credentials (injected into `GoogleService`).
+    - `mail.config.ts`: SMTP settings (injected into `MailService`).
+    - `app.config.ts`: General app settings.
+  
+- **Database Configuration Refactor**:
+  - Refactored `DbModule` to use `useFactory` (Async Provider) for creating connection pool.
+  - Dependency injected `ConfigService` into `DbModule` to ensure `DATABASE_URL` is validated before connection creation.
+  - Removed side-effect connection logic from `db.ts`.
+
+- **Verification**:
+  - Confirmed all backend modules (`Auth`, `Mail`, `Db`) are using injected configuration.
+  - Validated build success (`nx build backend`).

@@ -1,19 +1,18 @@
-import 'dotenv/config';
+// import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from './schema.js';
 import { Pool } from 'pg';
 
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-	console.warn(
-		'DATABASE_URL is not set; falling back to default pg connection params'
-	);
+export { schema };
+
+export function createPool(connectionString: string){
+	return new Pool({
+		connectionString
+	});
+}
+export function createDB(pool: Pool){
+	return drizzle(pool, { schema });
 }
 
-export const pool = new Pool({
-	connectionString
-});
+export type DB = ReturnType<typeof createDB>;
 
-export const db = drizzle(pool, { schema });
-export type DB = typeof db;
-export { schema };

@@ -48,7 +48,7 @@ export class GoogleController {
 	private setRefreshCookie(res: Response, token: string) {
 		res.cookie('refreshToken', token, {
 			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
+			secure: process.env.NODE_ENV === 'prd',
 			maxAge: 1000 * 60 * 60 * 24 * 30 // 30 days
 		});
 	}
