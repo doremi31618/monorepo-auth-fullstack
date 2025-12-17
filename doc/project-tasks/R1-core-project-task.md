@@ -107,7 +107,7 @@ Todo checklist
  - [x] 拆分 auth/user schema 至 core 層級並更新 Drizzle aggregator 與 repository import
  - [x] 設定 Nx tags + lint 邊界（scope:infra-core/domain-core/feature），跑 lint/graph 驗證 <!-- id: 5 -->
  - [x] **Config System**: 實作 Schema/Validation (Zod/Joi) 並移除直接 env 存取
- - [ ] **Logger & Error Handling**: 實作 JSON Logger, GlobalExceptionFilter, LoggingInterceptor
+ - [/] **Logger & Error Handling**: 實作 JSON Logger, GlobalExceptionFilter, LoggingInterceptor (Design & Guide Completed)
  - [ ] **Domain Core Implementation**: 實作 BaseRepository, UserRepository, 並調整 AuthModule 依賴 IUserService
  - [ ] **Auth Base Refinement**: 確認 @CurrentUser 與 UserIdentity 標準化
  - [ ] **Documentation**: 撰寫 DEVELOPMENT_GUIDE.md
@@ -293,3 +293,16 @@ Deliverables
 - **Verification**:
   - Confirmed all backend modules (`Auth`, `Mail`, `Db`) are using injected configuration.
   - Validated build success (`nx build backend`).
+
+### 2025-12-17
+
+- **Logger & Error Handling Research (Phase 1)**:
+  - Investigated requirements for centralized logging and error handling.
+  - Verified `ApiResponse` contract in `@share/contract` to ensure consistent error envelopes.
+  - **Designed "Smart Logger" Architecture**:
+    - Switches between JSON (Production) and Pretty Print (Development) modes based on `NODE_ENV`.
+    - Leverages existing `AppConfig` for environment detection.
+  - **Documentation**:
+    - Created detailed implementation guide: `doc/implementation-guides/logger-and-error-handling.md`.
+    - Guide covers: `LoggerService`, `GlobalExceptionFilter`, `LoggingInterceptor`, and `main.ts` integration.
+    - Archived plan for future implementation by team.

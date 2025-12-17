@@ -29,6 +29,11 @@ const config = defineConfig({
 	resolve: {
 		conditions: ['monorepo-system-template']
 	},
+	ssr: {
+		resolve: {
+			conditions: ['monorepo-system-template']
+		}
+	},
 	test: {
 		projects: [
 			{
