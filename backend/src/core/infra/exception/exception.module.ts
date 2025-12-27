@@ -9,6 +9,6 @@ import { LoggerModule } from '../logger/logger.module.js';
         provide: APP_FILTER,
         useClass: GlobalExceptionFilter,
     }],
-    exports: [GlobalExceptionFilter],
+    // exports: [GlobalExceptionFilter],
 })
-export class ExceptionModule {}
+export class ExceptionModule { }

@@ -11,9 +11,10 @@ import {
 	ResetResponseDto,
 	LoginResponseDto
 } from '@share/contract';
-import { UserRepository } from '../user/user.repository.js';
+// import { UserRepository } from '../user/user.repository.js';
 import { SessionRepository } from './auth.repository.js';
 import { MailService } from '../../infra/mail/mail.service.js';
+import { IUserService } from '../user/user.interface.js';
 
 const SESSION_EXPIRATION_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 const RESET_TOKEN_EXPIRATION_MS = 1000 * 60 * 5; // 5 minutes
@@ -21,7 +22,7 @@ const RESET_TOKEN_EXPIRATION_MS = 1000 * 60 * 5; // 5 minutes
 @Injectable()
 export class AuthService {
 	constructor(
-		private readonly userRepository: UserRepository,
+		private readonly userService: IUserService,
 		private readonly sessionRepository: SessionRepository,
 		private readonly mailService: MailService
 	) { }
@@ -81,7 +82,7 @@ export class AuthService {
 		const { email, password } = loginDto;
 
 		// check if user exists
-		const user = await this.userRepository.getUserByEmail(email);
+		const user = await this.userService.getUserByEmail(email);
 		if (!user) {
 			throw new BadRequestException('Invalid credentials');
 		}
@@ -124,7 +125,7 @@ export class AuthService {
 
 	async signup(signupDto: SignupDto): Promise<UserIdentityDto> {
 		// check if user already exists
-		const existingUser = await this.userRepository.getUserByEmail(
+		const existingUser = await this.userService.getUserByEmail(
 			signupDto.email
 		);
 		if (existingUser) {
@@ -134,7 +135,7 @@ export class AuthService {
 		// hash password
 		const { email, password, name } = signupDto;
 		const hashedPassword = await bcrypt.hash(password, 10);
-		const user = await this.userRepository.createUser({
+		const user = await this.userService.createUser({
 			email,
 			password: hashedPassword,
 			name
@@ -150,7 +151,7 @@ export class AuthService {
 	}
 
 	async requestPasswordReset(dto: ResetRequestDto): Promise<ResetResponseDto> {
-		const user = await this.userRepository.getUserByEmail(dto.email);
+		const user = await this.userService.getUserByEmail(dto.email);
 		if (!user) {
 			throw new BadRequestException('User not found');
 		}
@@ -178,7 +179,7 @@ export class AuthService {
 			throw new BadRequestException('Invalid or expired reset token');
 		}
 		const hashedPassword = await bcrypt.hash(dto.password, 10);
-		await this.userRepository.updatePassword(consumed.userId, hashedPassword);
+		await this.userService.updatePassword(consumed.userId, hashedPassword);
 		await this.sessionRepository.deleteAllTokensByUser(consumed.userId);
 		return {
 			userId: consumed.userId,

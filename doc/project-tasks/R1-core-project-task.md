@@ -4,6 +4,11 @@
 
 # Core Module Progress Report (Milestone 1)
 
+> **Roadmap**: [R1 - Core Refactor](../Roadmap/R1-core.md)
+> **Guides**:
+> - [01. Logger & Error Handling](../implementation-guides/R1-01-logger-and-error-handling.md)
+> - [02. Domain Core & Auth Base](../implementation-guides/R1-02-domain-core-and-auth-base.md)
+
 Last updated: 2025-12-05
 
 Review action：依 2025-12-05 review，先完成「Pre-M1 Monorepo Bootstrap」（Nx init + workspace + `/scripts` → Nx），再進入 Core 重構與模組遷移。

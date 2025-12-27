@@ -51,4 +51,9 @@ export declare class LoginResponseDto {
     userId: number;
     redirect: string;
 }
+export declare class CreateUserDto {
+    email: string;
+    name: string;
+    password: string;
+}
 //# sourceMappingURL=user.d.ts.map

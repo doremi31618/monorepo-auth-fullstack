@@ -1,15 +1,25 @@
+import { type CreateUserDto } from '@share/contract';
 import { Injectable } from '@nestjs/common';
-import { UserRepository, type CreateUser } from './user.repository.js';
+import { UserRepository } from './user.repository.js';
+import type { IUserService } from './user.interface.js';
 
 @Injectable()
-export class UserService {
-	constructor(private readonly userRepository: UserRepository) {}
-
-	async createUser(user: CreateUser) {
+export class UserService implements IUserService {
+	constructor(private readonly userRepository: UserRepository) { }
+	
+	async createUser(user: CreateUserDto) {
 		return this.userRepository.createUser(user);
+	}
+
+	async getUserById(id: number) {
+		return this.userRepository.getUserById(id);
 	}
 
 	async getUserByEmail(email: string) {
 		return this.userRepository.getUserByEmail(email);
+	}
+
+	async updatePassword(userId: number, newPassword: string) {
+		return this.userRepository.updatePassword(userId, newPassword);
 	}
 }

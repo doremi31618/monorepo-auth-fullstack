@@ -1,28 +1,31 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import { type DB } from '../../infra/db/db.js';
+// import { type DB } from '../../infra/db/db.js';
 import { schema } from '../../infra/db/schema.js';
+import { type UserEntity } from './user.interface.js';
+import { type CreateUserDto } from '@share/contract';
+import { BaseRepository } from '../../infra/db/base.repository.js';
+// import { type User, type NewUser } from './user.schema.js';
 
-export type ReturnUser = {
-	id: number;
-	email: string;
-	name: string;
-	password: string;
-	createdAt: Date;
-	updatedAt: Date;
-};
-
-export type CreateUser = {
-	email: string;
-	name: string;
-	password: string;
-};
 
 @Injectable()
-export class UserRepository {
-	constructor(@Inject('DB') private readonly db: DB) { }
-
-	async getUserByEmail(email: string): Promise<ReturnUser | null> {
+export class UserRepository extends BaseRepository {
+	// constructor(@Inject('DB') private readonly db: DB) { }
+	async getUserById(id: number): Promise<UserEntity | null> {
+		const user = await this.db
+			.select({
+				id: schema.users.id,
+				email: schema.users.email,
+				name: schema.users.name,
+				password: schema.users.password,
+				createdAt: schema.users.createdAt,
+				updatedAt: schema.users.updatedAt
+			})
+			.from(schema.users)
+			.where(eq(schema.users.id, id));
+		return user[0] ?? null;
+	}
+	async getUserByEmail(email: string): Promise<UserEntity | null> {
 		const user = await this.db
 			.select({
 				id: schema.users.id,
@@ -38,7 +41,7 @@ export class UserRepository {
 		return user[0] ?? null;
 	}
 
-	async createUser(user: CreateUser): Promise<ReturnUser> {
+	async createUser(user: CreateUserDto): Promise<UserEntity> {
 		const [newUser] = await this.db
 			.insert(schema.users)
 			.values({

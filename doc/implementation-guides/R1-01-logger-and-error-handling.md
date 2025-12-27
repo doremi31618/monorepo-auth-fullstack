@@ -1,4 +1,6 @@
-# Logger & Error Handling Implementation Guide
+# R1 - Logger & Error Handling Implementation Guide
+
+> **Related Task**: [R1-core-project-task](../project-tasks/R1-core-project-task.md) | **Roadmap**: [R1-core](../Roadmap/R1-core.md)
 
 This guide outlines the steps to implement a JSON Logger, Global Exception Filter, and Logging Interceptor in the backend.
 

@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module.js';
@@ -11,7 +12,11 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule, {
 		bufferLogs: true,
 	});
-	app.useLogger(app.get(LoggerService));
+	app.enableVersioning({
+		type: VersioningType.URI,
+		defaultVersion: '1',
+	});
+	app.useLogger(await app.resolve(LoggerService));
 	app.enableCors({ origin: true, credentials: true });
 	app.use(cookieParser());
 

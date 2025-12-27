@@ -2,7 +2,8 @@ import {
     IsString,
     IsNotEmpty,
     IsNumber,
-    IsDate
+    IsDate,
+    IsEmail
 } from 'class-validator'
 
 
@@ -146,4 +147,19 @@ export class LoginResponseDto {
     @IsString()
     @IsNotEmpty()
     redirect!: string;
+}
+
+export class CreateUserDto {
+    
+    @IsEmail()
+    @IsNotEmpty()
+    email!: string;
+    
+    @IsString()
+    @IsNotEmpty()
+    name!: string;
+    
+    @IsString()
+    @IsNotEmpty()
+    password!: string;
 }
