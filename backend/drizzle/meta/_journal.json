@@ -50,6 +50,13 @@
       "when": 1764751776884,
       "tag": "0006_peaceful_vapor",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1767094241399,
+      "tag": "0007_fancy_gargoyle",
+      "breakpoints": true
     }
   ]
 }

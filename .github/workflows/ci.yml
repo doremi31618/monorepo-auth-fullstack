@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout code
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      # Setup Node.js + Cache (NPM)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      
+      # Clean install 
+      - run: npm ci
+
+      # Run affected lint, test, build
+      - run: npx nx affected -t lint --parallel=3
+
+      # Run affected test
+      - run: npx nx affected -t test --parallel=3 --configuration=ci
+
+      # Run affected build
+      - run: npx nx affected -t build --parallel=3
+

@@ -53,27 +53,22 @@ jobs:
         with:
           fetch-depth: 0 # 必須抓取完整 history 讓 Nx 分析 commits
 
-      # 1. 安裝 pnpm (如果專案是用 pnpm)
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
-
-      # 2. Setup Node.js + Cache
+      # 1. Setup Node.js + Cache (NPM)
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: 'npm'
 
-      # 3. Install Dependencies
-      - run: pnpm install --frozen-lockfile
+      # 2. Install Dependencies
+      - run: npm ci
 
-      # 4. Nx Lint (Affected)
+      # 3. Nx Lint (Affected)
       - run: npx nx affected -t lint --parallel=3
       
-      # 5. Nx Test (Affected)
+      # 4. Nx Test (Affected)
       - run: npx nx affected -t test --parallel=3 --configuration=ci
 
-      # 6. Nx Build (Affected)
+      # 5. Nx Build (Affected)
       - run: npx nx affected -t build --parallel=3
 ```
 
@@ -100,6 +95,31 @@ jobs:
 - **水平擴展問題 (Scaling Issue)**: 當後端部署多個實例 (Replicas) 時，若使用單純的 `@Cron`，每個實例都會同時執行同一個任務 (e.g., 每天凌晨發送報表)，導致重複執行。
 - **避免過早引入 Redis**: 標準解法是 Redis/BullMQ，但在專案初期 (R1)，引入 Redis 增加運維複雜度。
 - **現有資源利用**: PostgreSQL 9.5+ 支援 `SKIP LOCKED`，可以完美實作 "Job Queue" 且具備 ACID 特性。
+
+#### Architecture Comparison (架構比較)
+
+```mermaid
+flowchart TD
+    subgraph Traditional_Cron ["傳統 @Cron (每個實例各自執行)"]
+        direction TB
+        T1[Instance A: 01:00 AM] -->|觸發| E1[執行清理邏輯]
+        T2[Instance B: 01:00 AM] -->|觸發| E2[執行清理邏輯]
+        T3[Instance C: 01:00 AM] -->|觸發| E3[執行清理邏輯]
+        X[結果: 跑了 3 次! 重複寄信/扣款]
+    end
+
+    subgraph Distributed_Scheduler ["分散式 Scheduler (搶單模式)"]
+        direction TB
+        P1[Instance A] -->|1. 嘗試排程| DB[(Postgres Jobs)]
+        P2[Instance B] -->|1. 嘗試排程| DB
+        DB --"Unique Key (name, time) 擋下重複"--> Job[生成 1 筆 Pending 任務]
+        
+        W1[Worker A] -->|2. 搶單| Job
+        W2[Worker B] -->|2. 搶單| Job
+        Job --"SKIP LOCKED 機制"--> Winner[Worker B 搶到了!]
+        Winner --> DoWork[執行清理邏輯]
+    end
+```
 
 ### 2-2. Technology Stack (技術原理)
 
@@ -161,28 +181,121 @@ export const jobs = pgTable('jobs', {
 #### Step 3: Implement Postgres Adapter (Service)
 `backend/src/core/infra/scheduling/postgres-scheduler.service.ts`
 
-1. **Worker Loop**: 使用 `setInterval` 每秒輪詢 DB。
-2. **Fetch Job**:
-   ```typescript
-   // Pseudo-SQL via Drizzle
-   /*
-     UPDATE jobs 
-     SET status = 'processing', locked_at = NOW()
-     WHERE id = (
-       SELECT id FROM jobs 
-       WHERE status = 'pending' AND run_at <= NOW()
-       ORDER BY run_at ASC
-       FOR UPDATE SKIP LOCKED
-       LIMIT 1
-     )
-     RETURNING *;
-   */
-   ```
-3. **Dispatch**: 找到對應的 Handler 執行。
-4. **Complete**: 執行成功更新 status='completed'，失敗更新 'failed'。
+我們實作一個 `PostgresSchedulerService` (作為 Adapter) 來處理 Worker Loop 與搶單邏輯：
 
-#### Step 4: Integration
-在 `CoreModule` 或 `InfraModule` 提供 `JobSchedulerPort` 的實作 `PostgresSchedulerService`。
+```typescript
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Job, JobSchedulerPort } from '../../domain/scheduling/scheduler.port';
+import { SchedulingRepository } from './scheduling.repository';
+
+@Injectable()
+export class PostgresSchedulerService implements JobSchedulerPort, OnModuleInit {
+    private readonly logger = new Logger(PostgresSchedulerService.name);
+    private readonly handlers = new Map<string, (job: Job) => Promise<void>>();
+    private readonly workerId = `worker-${Math.random().toString(36).substring(7)}`;
+
+    constructor(
+        private readonly repository: SchedulingRepository
+    ) {}
+
+    onModuleInit() {
+        this.logger.log(`Starting worker ${this.workerId}`);
+        // 使用遞迴 setTimeout 取代 setInterval，避免任務執行時間 > 間隔導致的重疊執行
+        this.poll();
+    }
+
+    async schedule(name: string, data: any, runAt: Date): Promise<void> {
+        await this.repository.createJob({ name, data, runAt });
+    }
+
+    registerHandler(name: string, handler: (job: Job) => Promise<void>): void {
+        this.handlers.set(name, handler);
+    }
+
+    private async poll() {
+        let nextInterval = 1000; // 預設間隔 1 秒
+
+        try {
+            const job = await this.repository.pollJob(this.workerId);
+            
+            if (job) {
+                // 有任務！立即處理
+                this.logger.log(`Processing job ${job.id}`);
+                const handler = this.handlers.get(job.name);
+                
+                if (handler) {
+                    try {
+                        await handler(job);
+                        await this.repository.completeJob(job.id);
+                    } catch (err) {
+                        this.logger.error(`Job failed`, err);
+                        await this.repository.failJob(job.id);
+                    }
+                } else {
+                    await this.repository.failJob(job.id); // No handler
+                }
+                
+                // P.S. 策略優化：如果剛剛有任務，代表可能還有堆積，可以縮短下一次等待時間 (e.g., 0ms or 100ms)
+                nextInterval = 100;
+            } else {
+                // 沒任務，維持一般心跳頻率 (或是可以實作 Backoff 策略：1s -> 2s -> 5s...)
+                nextInterval = 3000; // 閒置時可以睡久一點，例如 3 秒
+            }
+
+        } catch (error) {
+            this.logger.error('Polling error', error);
+        } finally {
+            // 確保這個回合跑完才排定下一次，避免 Race Condition 與資源浪費
+            setTimeout(() => this.poll(), nextInterval);
+        }
+    }
+}
+```
+
+> **效能優化筆記**: 
+> 1. **Index Scan**: `pollJob` 使用的 SQL 因為有 Index 支援，即使每秒跑一次，對 Postgres 來說負擔極小 (不到 1ms)。
+> 2. **Adaptive Polling**: 上述範例使用了動態間隔 (`nextInterval`)，忙碌時加速，閒置時減速，能進一步降低 DB 負載。
+
+#### Step 4: Refactor Legacy Cron (Example)
+如何將既有的 Cron Service 改造成分散式架構：
+
+`backend/src/core/domain/auth/session-cleanup.service.ts`
+
+```typescript
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { Job, JobSchedulerPort } from '../../infra/scheduling/scheduling.port';
+import { SessionRepository } from './auth.repository';
+
+@Injectable()
+export class SessionCleanupService implements OnModuleInit {
+    constructor(
+        private readonly sessionRepository: SessionRepository,
+        // 1. 注入排程器 Port
+        private readonly scheduler: JobSchedulerPort
+    ) {}
+
+    // 2. 啟動時註冊處理器 (Consumer)
+    onModuleInit() {
+        // 當 Worker 搶到任務時，會呼叫這裡
+        this.scheduler.registerHandler('cleanup-sessions', async (job: Job) => {
+            console.log(`[Job] Starting cleanup sessions...`);
+            await this.sessionRepository.cleanupExpiredSessions();
+        });
+    }
+
+    // 3. 原本的 Cron 只負責 "排程" (Producer)
+    @Cron(CronExpression.EVERY_DAY_AT_1AM)
+    async scheduleCleanupSessions() {
+        // 技巧：將時間鎖定在 "當天 01:00"，確保生成的 Key 一致
+        const runAt = new Date();
+        runAt.setMinutes(0, 0, 0); 
+        
+        // 丟進 DB，如果別的實例已經丟過，這裡會被忽略 (Idempotency)
+        await this.scheduler.schedule('cleanup-sessions', {}, runAt);
+    }
+}
+```
 
 ---
 

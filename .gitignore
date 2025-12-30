@@ -17,3 +17,8 @@ bun.lockb
 .github/instructions/nx.instructions.md
 vite.config.*.timestamp*
 test-output
+
+# Local & System Files
+.DS_Store
+.gemini/
+.mcp.json

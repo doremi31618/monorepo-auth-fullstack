@@ -48,10 +48,10 @@ Review action：依 2025-12-05 review，先完成「Pre-M1 Monorepo Bootstrap」
 | Auth base (non-RBAC) | ⏳ Planned | UserIdentity, IUserService token, AuthGuardBase, @CurrentUser decorator; Domain Core supplies IUserService. |
 | Shared utilities | ✅ Done | Pagination/date/id utilities; **Shared HttpClient/StorageService (@share/sdk)**; reused by ≥2 modules. |
 | Nx Workspace (backend + frontend) | 🔄 In Progress | Tags scope:infra-core/scope:domain-core/scope:feature; lint boundary rules; nx graph after migration confirms direction; Nx init done in Pre-M1. |
-| CI/CD on Nx | ⏳ Planned | CI pipeline uses nx build/test/lint; Nx cache enabled; nx affected wired for future use; legacy scripts mapped to Nx target. |
+| CI/CD on Nx | ✅ Done | CI pipeline uses nx build/test/lint; Nx cache enabled; nx affected wired for future use; legacy scripts mapped to Nx target. |
 | Development guidelines | ⏳ Planned | DEVELOPMENT_GUIDE.md covering schema ownership, module boundaries, DI, naming/structure, PR checklist. |
 | Migration (auth/user + schema) | ⏳ Planned | src/user → core/domain/user；src/auth → core/infra/auth；src/db/schema.ts split; imports updated; Nx graph clean. |
-| Backend Scheduling (PG-Queue) | ⏳ Planned | **ADR-002**: JobSchedulerPort interface; Producer (Unique Key idempotency); Consumer (SELECT FOR UPDATE SKIP LOCKED); No Redis needed. |
+| Backend Scheduling (PG-Queue) | 🔄 In Progress | **ADR-002**: JobSchedulerPort interface; Producer (Unique Key idempotency); Consumer (SELECT FOR UPDATE SKIP LOCKED); No Redis needed. |
 
 ⸻
 
@@ -118,8 +118,8 @@ Todo checklist
  - [x] **Domain Core Implementation**: 實作 BaseRepository, UserRepository, 並調整 AuthModule 依賴 IUserService
  - [x] **Auth Base Refinement**: 確認 @CurrentUser 與 UserIdentity 標準化
  - [x] **Documentation**: 撰寫 DEVELOPMENT_GUIDE.md (Merged into backend-onboarding.md)
- - [ ] **CI/CD**: 設定 GitHub Actions 執行 nx build/test/lint
- - [ ] **Backend Scheduling**: 實作 JobSchedulerPort, Producer (Idempotency), Consumer (Locking) [ADR-002]
+ - [x] **CI/CD**: 設定 GitHub Actions 執行 nx build/test/lint
+ - [/] **Backend Scheduling**: 實作 JobSchedulerPort, Producer (Idempotency), Consumer (Locking) [ADR-002] (Partial implemented: Port/Schema/BaseService)
  - [ ] 驗收後標記 Core v0.1.0 baseline
 
 ⸻
@@ -362,3 +362,33 @@ Deliverables
     - Addressed potential runtime crash in `AuthGuard` with proper null checks for user lookup.
     - Verified Dependency Injection wiring to prevent module resolution failures.
 
+### 2025-12-30
+
+- **CI/CD Pipeline Refinement** (Completed):
+  - **Migration to NPM**: Switched CI workflow from PNPM to NPM (`npm ci`) to align with project standards.
+  - **Optimization**: Configured `nx affected` validation for Lint, Test, and Build stages.
+  - **Documentation**: Updated `R1-03-cicd-and-scheduling.md` to reflect NPM usage.
+
+- **Drizzle ORM Troubleshooting** (Completed):
+  - **Fixed Generation Error**: Resolved `MODULE_NOT_FOUND` in `drizzle-kit generate`.
+  - **Fixed Studio Command**: Updated `package.json` to use `drizzle-kit studio`.
+
+- **Backend Scheduling System** (In Progress):
+  - **Architecture**: Defined Hexagonal Architecture (Port/Adapter) & PostgreSQL PG-Queue strategy.
+  - **Components Created**: `JobSchedulerPort` (Interface), `jobs` Schema (Unique Key).
+  - **Guide Updated**: `R1-03` guide now details **Adaptive Polling** (Backoff strategy) to minimize idle resources.
+  - **Status Note**: Implementation of `pollJob` (Repo) and `Worker Loop` (Service) was explored but reverted to allow for further architectural discussion.
+
+- **Architectural Discussion (To Be Continued)**:
+  - **User Feedback**: "Cron should trigger the listener" rather than a constant polling loop.
+  - **Analysis**:
+    - Current design: Constant background polling (Service starts loop on init).
+    - Alternative: Event-driven (Postgres LISTEN/NOTIFY) or Cron-triggered check?
+    - Trade-off: Cron triggering implies every instance wakes up simultaneously (still need locking). LISTEN/NOTIFY requires persistent connection handling.
+    - **Action Item**: Re-evaluate this preference next session.
+
+- **Next Steps (Pending)**:
+  1.  **Resume Scheduling Implementation**: Decide on final polling strategy (Adaptive Polling vs Event Driven).
+  2.  **Repository**: Implement `pollJob` with `SKIP LOCKED`.
+  3.  **Service**: Implement correct Worker Loop based on decision.
+  4.  **Refactor**: Migrate `SessionCleanupService` to Scheduler.
