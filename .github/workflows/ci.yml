@@ -23,19 +23,24 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      # Cache node_modules
-      - name: Cache node_modules
-        id: cache-node-modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
+      - name: Show Node/npm versions
+        run: |
+          node --version
+          npm --version
+          npm config get registry
 
-      # Install Dependencies (only on cache miss)
+      # Install Dependencies
       - name: Install Dependencies
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci
+        env:
+          NPM_CONFIG_FETCH_RETRIES: 5
+          NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 20000
+          NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 120000
+          NPM_CONFIG_LOGLEVEL: warn
+          NPM_CONFIG_PROGRESS: false
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+        run: npm ci --prefer-offline --no-audit --no-fund
 
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
@@ -45,4 +50,3 @@ jobs:
 
       # Run affected build
       - run: npx nx affected -t build --parallel=3
-
