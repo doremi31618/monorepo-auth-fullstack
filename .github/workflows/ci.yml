@@ -27,6 +27,12 @@ jobs:
       
       # Clean install 
       - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
+      # Install Playwright browsers (only when Playwright tests are required)
+      - run: npx playwright install --with-deps
+        if: ${{ env.RUN_PLAYWRIGHT_TESTS == 'true' }}
 
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
@@ -36,4 +42,3 @@ jobs:
 
       # Run affected build
       - run: npx nx affected -t build --parallel=3
-
