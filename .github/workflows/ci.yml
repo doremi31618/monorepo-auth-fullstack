@@ -25,8 +25,8 @@ jobs:
           node-version: 20
           cache: 'npm'
       
-      # Clean install 
-      - run: npm ci
+      # Clean install (omit optional deps like Playwright on CI)
+      - run: npm ci --omit=optional
 
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
@@ -36,4 +36,3 @@ jobs:
 
       # Run affected build
       - run: npx nx affected -t build --parallel=3
-
