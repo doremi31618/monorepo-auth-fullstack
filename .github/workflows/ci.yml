@@ -35,6 +35,8 @@ jobs:
       # Install Dependencies (only on cache miss)
       - name: Install Dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
         run: npm ci
 
       # Run affected lint, test, build
@@ -45,4 +47,3 @@ jobs:
 
       # Run affected build
       - run: npx nx affected -t build --parallel=3
-
