@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { SchedulingService } from './scheduling.service.js';
 import { JobSchedulerPort } from './scheduling.port.js';
+import { LoggerModule } from '../logger/logger.module.js';
 import { SchedulingRepository } from './scheduling.repository.js';
-
 @Module({
+  imports: [
+    LoggerModule,
+  ],
   providers: [
     SchedulingService,
     SchedulingRepository,
@@ -14,4 +17,4 @@ import { SchedulingRepository } from './scheduling.repository.js';
   ],
   exports: [JobSchedulerPort]
 })
-export class SchedulingModule {}
+export class SchedulingModule { }

@@ -10,7 +10,7 @@
 > - [02. Domain Core & Auth Base](../implementation-guides/R1-02-domain-core-and-auth-base.md)
 > - [03. CI/CD & Scheduling](../implementation-guides/R1-03-cicd-and-scheduling.md)
 
-Last updated: 2025-12-05
+Last updated: 2026-01-02
 
 Review action：依 2025-12-05 review，先完成「Pre-M1 Monorepo Bootstrap」（Nx init + workspace + `/scripts` → Nx），再進入 Core 重構與模組遷移。
 
@@ -39,25 +39,25 @@ Review action：依 2025-12-05 review，先完成「Pre-M1 Monorepo Bootstrap」
 
 | Feature / capability | Status | Notes |
 | --- | --- | --- |
-| Pre-M1 Monorepo bootstrap | 🔄 In Progress | Root package.json + pnpm workspaces + lockfile；Nx init with backend/frontend apps；scripts → Nx target/alias；nx graph runnable. |
-| Core structure (Domain + Infra) | 🔄 In Progress | backend/src/core split into core/domain and core/infra with enforced boundaries. |
-| Domain Core (User) | ⏳ Planned | User schema/repository/service; implements IUserService for AuthBase and feature modules. |
-| Config system | ⏳ Planned | ConfigModule with schema validation, environment profiles, typed getters; no direct process.env. |
-| Database layer (Drizzle) | 🔄 In Progress | DatabaseModule, Drizzle setup, BaseEntity/BaseRepository, runInTransaction; schema split by layer; aggregator only for DB client/migration. |
-| Logger & error handling | ⏳ Planned | JSON logger, LoggingInterceptor, GlobalExceptionFilter with unified envelope. |
-| Auth base (non-RBAC) | ⏳ Planned | UserIdentity, IUserService token, AuthGuardBase, @CurrentUser decorator; Domain Core supplies IUserService. |
+| Pre-M1 Monorepo bootstrap | ✅ Done | Root package.json + pnpm workspaces + lockfile；Nx init with backend/frontend apps；scripts → Nx target/alias；nx graph runnable. |
+| Core structure (Domain + Infra) | ✅ Done | backend/src/core split into core/domain and core/infra with enforced boundaries. |
+| Domain Core (User) | ✅ Done | User schema/repository/service; implements IUserService for AuthBase and feature modules. |
+| Config system | ✅ Done | ConfigModule with schema validation, environment profiles, typed getters; no direct process.env. |
+| Database layer (Drizzle) | ✅ Done | DatabaseModule, Drizzle setup, BaseEntity/BaseRepository, runInTransaction; schema split by layer; aggregator only for DB client/migration. |
+| Logger & error handling | ✅ Done | JSON logger, LoggingInterceptor, GlobalExceptionFilter with unified envelope. |
+| Auth base (non-RBAC) | ✅ Done | UserIdentity, IUserService token, AuthGuardBase, @CurrentUser decorator; Domain Core supplies IUserService. |
 | Shared utilities | ✅ Done | Pagination/date/id utilities; **Shared HttpClient/StorageService (@share/sdk)**; reused by ≥2 modules. |
-| Nx Workspace (backend + frontend) | 🔄 In Progress | Tags scope:infra-core/scope:domain-core/scope:feature; lint boundary rules; nx graph after migration confirms direction; Nx init done in Pre-M1. |
+| Nx Workspace (backend + frontend) | ✅ Done | Tags scope:infra-core/scope:domain-core/scope:feature; lint boundary rules; nx graph after migration confirms direction; Nx init done in Pre-M1. |
 | CI/CD on Nx | ✅ Done | CI pipeline uses nx build/test/lint; Nx cache enabled; nx affected wired for future use; legacy scripts mapped to Nx target. |
-| Development guidelines | ⏳ Planned | DEVELOPMENT_GUIDE.md covering schema ownership, module boundaries, DI, naming/structure, PR checklist. |
-| Migration (auth/user + schema) | ⏳ Planned | src/user → core/domain/user；src/auth → core/infra/auth；src/db/schema.ts split; imports updated; Nx graph clean. |
-| Backend Scheduling (PG-Queue) | 🔄 In Progress | **ADR-002**: JobSchedulerPort interface; Producer (Unique Key idempotency); Consumer (SELECT FOR UPDATE SKIP LOCKED); No Redis needed. |
+| Development guidelines | ✅ Done | DEVELOPMENT_GUIDE.md covering schema ownership, module boundaries, DI, naming/structure, PR checklist. |
+| Migration (auth/user + schema) | ✅ Done | src/user → core/domain/user；src/auth → core/infra/auth；src/db/schema.ts split; imports updated; Nx graph clean. |
+| Backend Scheduling (PG-Queue) | ✅ Done | **ADR-002**: JobSchedulerPort interface; Producer (Idempotency); Consumer (Atomic Locking); Configurable Worker ID; No Redis needed. |
 
 ⸻
 
 ## Overall status snapshot
- • ⏳ In Progress / Planned: Pre-M1 monorepo bootstrap（Nx init + scripts 映射）、Domain Core（User）、Infra Core（config/db/logger/auth-base/utils）、Nx tags + boundary lint、DEVELOPMENT_GUIDE、CI migration to Nx、auth/user/schema migration。
- • ❌ Not Started: Core extraction to shared library（future milestone）、downstream integrations、release tagging。
+ • ✅ Complete: Pre-M1 monorepo bootstrap, Domain Core, Infra Core, Nx tags + boundary lint, DEVELOPMENT_GUIDE, CI migration, auth/user/schema migration, release tagging.
+ • ❌ Not Started: Core extraction to shared library（future milestone）、downstream integrations.
 
 ⸻
 
@@ -119,8 +119,8 @@ Todo checklist
  - [x] **Auth Base Refinement**: 確認 @CurrentUser 與 UserIdentity 標準化
  - [x] **Documentation**: 撰寫 DEVELOPMENT_GUIDE.md (Merged into backend-onboarding.md)
  - [x] **CI/CD**: 設定 GitHub Actions 執行 nx build/test/lint
- - [/] **Backend Scheduling**: 實作 JobSchedulerPort, Producer (Idempotency), Consumer (Locking) [ADR-002] (Partial implemented: Port/Schema/BaseService)
- - [ ] 驗收後標記 Core v0.1.0 baseline
+ - [x] **Backend Scheduling**: 實作 JobSchedulerPort, Producer (Idempotency), Consumer (Locking) [ADR-002] (Fully implemented: Repository Atomic Lock, Robust Service Loop, Session Cleanup Integration)
+ - [x] 驗收後標記 Core v0.1.0 baseline
 
 ⸻
 
@@ -161,20 +161,20 @@ Deliverables
  • [domain/user] UserEntity schema; UserRepository extends BaseRepository; UserService implements IUserService.
 
 **Migration: existing modules（auth/user + schema）**
- • 移動 src/user → core/domain/user；更新 import/path + Nx tags。
- • 移動 src/auth → core/infra/auth；守住只依賴 IUserService。
- • 拆分 src/db/schema.ts 為 domain/infra/feature schemas；更新 Drizzle aggregator；清理舊引用。
- • 跑 nx graph/lint 確認無循環與邊界違規。
+ • [x] 移動 src/user → core/domain/user；更新 import/path + Nx tags。
+ • [x] 移動 src/auth → core/domain/auth；守住只依賴 IUserService [Note: Moved to domain instead of infra]。
+ • [x] 拆分 src/db/schema.ts 為 domain/infra/feature schemas；更新 Drizzle aggregator；清理舊引用。
+ • [x] 跑 nx graph/lint 確認無循環與邊界違規。
 
 **Integration: CoreModule**
  • Wire Infra Core + Domain Core under CoreModule; replace ad-hoc infra usage in backend modules。
 
 **Nx Workspace（邊界治理）**
- • Add tags scope:infra-core / scope:domain-core / scope:feature and lint boundary rules; validate with nx graph after遷移。
+ • [x] Add tags scope:infra-core / scope:domain-core / scope:feature and lint boundary rules; validate with nx graph after遷移 (Implemented via ESLint `import/no-restricted-paths`).
 
 **Documentation & governance**
- • Write DEVELOPMENT_GUIDE.md（schema ownership、module boundaries、DI、命名/結構、commit/PR checklist、how to add domain/feature modules）。
- • Add boundary lint checks to CI.
+ • [x] Write DEVELOPMENT_GUIDE.md（schema ownership、module boundaries、DI、命名/結構、commit/PR checklist、how to add domain/feature modules）[Merged into backend-onboarding.md].
+ • [x] Add boundary lint checks to CI.
 
 **CI/CD migration to Nx**
  • Switch CI jobs to nx build/test/lint; enable Nx cache; add nx affected pipeline scaffold.
@@ -387,8 +387,18 @@ Deliverables
     - Trade-off: Cron triggering implies every instance wakes up simultaneously (still need locking). LISTEN/NOTIFY requires persistent connection handling.
     - **Action Item**: Re-evaluate this preference next session.
 
-- **Next Steps (Pending)**:
-  1.  **Resume Scheduling Implementation**: Decide on final polling strategy (Adaptive Polling vs Event Driven).
-  2.  **Repository**: Implement `pollJob` with `SKIP LOCKED`.
   3.  **Service**: Implement correct Worker Loop based on decision.
   4.  **Refactor**: Migrate `SessionCleanupService` to Scheduler.
+
+### 2026-01-02
+
+- **Backend Scheduling System (Completed)**:
+  - **Refactored Worker ID**: Implemented configurable `workerId` in `AppConfig` (env var or hostname-based) to support identifying workers in distributed setup.
+  - **Atomic Locking Mechanism**: Implemented `lockNextJob` in `SchedulingRepository` using `UPDATE ... RETURNING` pattern with proper state checks to ensure only one worker picks up a pending job.
+  - **Robust Service Implementation**: Refactored `SchedulingService` polling loop:
+    - Added `try-catch` blocks around handler execution to isolate failures.
+    - Fixed strict type mismatches between DB schema and Job interface.
+    - Corrected `schedule()` logic to allow distributed queuing (removed local handler check).
+  - **Integration**: Refactored `SessionCleanupService` to use `JobSchedulerPort` for daily cleanup tasks.
+  - **Documentation**: Finalized `walkthrough.md` with implementation details.
+

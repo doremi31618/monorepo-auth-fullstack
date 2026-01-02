@@ -6,6 +6,7 @@ export type AppConfig = {
 	host: string;
 	protocol: string;
 	baseUrl: string;
+	workerId: string;
 };
 export default registerAs('app', (): AppConfig => {
 	const env = process.env.NODE_ENV ?? 'dev';
@@ -13,12 +14,14 @@ export default registerAs('app', (): AppConfig => {
 	const protocol = process.env.API_PROTOCOL ?? 'http';
 	const host = process.env.API_HOST ?? 'localhost';
 	const baseUrl = process.env.API_BASE_URL ?? `${protocol}://${host}:${port}`;
+	const workerId = process.env.WORKER_ID ?? `${host}-${Math.random().toString(36).substring(7)}`;
 
 	return {
 		env,
 		port,
 		host,
 		protocol,
-		baseUrl
+		baseUrl,
+		workerId,
 	};
 });

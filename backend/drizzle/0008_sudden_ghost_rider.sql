@@ -1,0 +1,1 @@
+ALTER TABLE "jobs" ADD COLUMN "locked_by_worker_id" text;

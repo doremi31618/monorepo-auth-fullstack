@@ -7,6 +7,7 @@ export const jobs = pgTable('jobs', {
     status: text('status').$type<'pending' | 'processing' | 'completed' | 'failed'>().default('pending'),
     runAt: timestamp('run_at').notNull(),
     lockedAt: timestamp('locked_at'),
+    lockedByWorkerId: text('locked_by_worker_id'),
     createdAt: timestamp('created_at').defaultNow(),
 }, (table)=>{
     return {

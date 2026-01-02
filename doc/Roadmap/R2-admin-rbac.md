@@ -159,49 +159,43 @@ Actions：
 
 ⸻
 
-### Strategy D：Admin API（User, Role, Permission）
-
+### Strategy D：User Management (Admin)
 Actions：
-	•	建立以下後端 API：
+	•	建立 User Management API：
+	•	List users (Pagination, Sort, Search by email/name, Filter by role/status)
+	•	Create user (Direct create / Invite flow)
+	•	Edit user profile (Name, Avatar, Bio)
+	•	Manage Account Status (Active / Suspended / Deactivated)
+	•	Admin Password Reset (Force reset)
+	•	Assign Roles (RBAC integration)
+	•	Delete User (Soft Delete)
 
-User API：
-	•	List users（支援 search, pagination）
-	•	Create user
-	•	Edit user profile
-	•	Assign roles
-	•	Deactivate/Delete user
-
-Role API：
-	•	CRUD roles
-	•	Assign permissions to roles
-
-Permission API：
-	•	從 Permission Schema 自動生成列表
-	•	可分群（cms / system / workflow…）
+### Strategy E：Role & Permission Management
+Actions：
+	•	建立 Role/Permission API：
+	•	CRUD Roles
+	•	Assign Permissions to Roles
+	•	List Permissions (Grouped by module)
 
 ⸻
 
-### Strategy E：Admin UI（Users + Roles + Permissions）
+### Strategy F：Admin UI Implementation
 
 Actions：
-
-Users Page
-	•	user list table
-	•	edit user drawer
-	•	role assignment UI
-
-Roles Page
-	•	role list
-	•	create/edit role
-	•	permission multi-select UI
-
-Permissions Page
-	•	permission list（從 schema 自動產生）
-	•	可與 role edit UI 連動
+	•	**Users Page**
+	•	Data Table (with Search, Filter, Sort)
+	•	Create User Modal / Page
+	•	Edit User Drawer (Profile, Security, Roles)
+	•	Confirm Dialog for Delete / Suspend
+	•	**Roles Page**
+	•	List Roles
+	•	Create/Edit Role
+	•	**Permissions UI**
+	•	Multi-select / Tree View for assigning permissions
 
 ⸻
 
-### Strategy F：Permission Schema + 自動化
+### Strategy G：Permission Schema + 自動化
 
 Actions：
 	•	設計可被模組引用的 Permission Schema，例如：
@@ -223,7 +217,7 @@ export const PERMISSIONS = {
 
 ⸻
 
-### Strategy G：文件化與 Developer Experience
+### Strategy H：文件化與 Developer Experience
 
 Actions：
 	•	撰寫 RBAC 開發文件

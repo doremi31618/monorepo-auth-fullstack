@@ -12,7 +12,7 @@ export interface Job {
     name: string;
     status?: JobStatus;
     runAt: Date;
-    data: unknown;
+    data?: unknown;
 }
 
 

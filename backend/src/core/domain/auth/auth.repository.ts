@@ -181,7 +181,7 @@ export class SessionRepository {
 		}
 	}
 
-	async deleteExpiredRefreshTokens() {
+	async cleanupExpiredRefreshTokens() {
 		try {
 			const deletedRefreshTokens = await this.db
 				.delete(schema.authTokens)
