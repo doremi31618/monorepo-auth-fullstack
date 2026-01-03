@@ -241,8 +241,13 @@ jobs:
           npm install
           npm ls @esbuild/linux-x64 @swc/core-linux-x64-gnu --depth=0 || true
 
+      - name: Ensure lockfile exists
+        run: |
+          test -f package-lock.json || (echo "package-lock.json missing" && exit 1)
+
       - name: Upload lockfile
         uses: actions/upload-artifact@v4
         with:
-          name: linux-lockfile
+          name: linux-package-lock
           path: package-lock.json
+          if-no-files-found: error
