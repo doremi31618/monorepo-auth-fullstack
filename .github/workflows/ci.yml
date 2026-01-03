@@ -90,6 +90,18 @@ jobs:
           echo "== npm ls (selected) =="
           npm ls @esbuild/linux-x64 @swc/core-linux-x64-gnu --depth=0 || true
 
+      - name: Fail fast on wrong platform packages
+        if: always()
+        run: |
+          if [ -d "node_modules/@esbuild/darwin-arm64" ]; then
+            echo "❌ Wrong platform package installed: @esbuild/darwin-arm64 on Linux runner"
+            exit 1
+          fi
+          if [ -d "node_modules/@swc/core-darwin-arm64" ]; then
+            echo "❌ Wrong platform package installed: @swc/core-darwin-arm64 on Linux runner"
+            exit 1
+          fi
+
       - name: Verify platform binaries installed
         run: |
           node -e "const fs=require('fs'); const required=[['esbuild binary','node_modules/@esbuild/linux-x64/bin/esbuild'],['swc binding','node_modules/@swc/core-linux-x64-gnu/swc.linux-x64-gnu.node']]; const missing=required.filter(([,path])=>!fs.existsSync(path)); if (missing.length) { console.error('❌ platform binary files missing:'); missing.forEach(([name,path])=>console.error(` - ${name}: ${path}`)); console.error('Likely causes: lockfile missing entries, download failure, or config omitting optional deps.'); process.exit(1); } console.log('✅ platform binary files present');"
