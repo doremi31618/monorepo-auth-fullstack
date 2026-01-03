@@ -84,6 +84,12 @@ jobs:
         with:
           name: runner-diagnostics
           path: ci-metrics
+      
+      - name: Upload lockfile snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: lockfile-snapshot
+          path: package-lock.json
 
       # Install Dependencies
       - name: Install Dependencies
@@ -181,6 +187,12 @@ jobs:
           npm config list -l | grep -E "optional|omit|include|fetch-|network-|audit|fund|progress|loglevel|legacy-peer-deps" || true
           echo "---- .npmrc.ci ----"
           cat .npmrc.ci
+
+      - name: Upload lockfile snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: lockfile-snapshot-debug
+          path: package-lock.json
 
       - name: Optional clean cache (debug)
         if: ${{ inputs.clean_cache == 'true' }}
