@@ -26,6 +26,23 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
+      - name: Prepare CI npm config
+        run: |
+          cat > .npmrc.ci << 'EOF'
+          fund=false
+          audit=false
+          progress=false
+          optional=true
+          omit=
+          fetch-retries=5
+          fetch-retry-mintimeout=20000
+          fetch-retry-maxtimeout=120000
+          fetch-timeout=120000
+          network-timeout=120000
+          loglevel=warn
+          legacy-peer-deps=true
+          EOF
+      
       - name: Show Node/npm versions
         run: |
           node --version
@@ -34,7 +51,7 @@ jobs:
           mkdir -p ci-metrics
           free -h | tee ci-metrics/memory.txt
           df -h | tee ci-metrics/disk.txt
-          npm config list | tee ci-metrics/npm-config.txt
+          npm config list -l | grep -E "optional|omit|fetch-|network-|audit|fund|progress" | tee ci-metrics/npm-config.txt
           npm config get optional | tee ci-metrics/npm-optional.txt
           npm config get omit | tee ci-metrics/npm-omit.txt
           npm config list -l | grep -E "optional|omit" | tee ci-metrics/npm-optional-omit.txt
@@ -54,23 +71,6 @@ jobs:
         with:
           name: runner-diagnostics
           path: ci-metrics
-
-      - name: Prepare CI npm config
-        run: |
-          cat > .npmrc.ci << 'EOF'
-          fund=false
-          audit=false
-          progress=false
-          optional=true
-          omit=
-          fetch-retries=5
-          fetch-retry-mintimeout=20000
-          fetch-retry-maxtimeout=120000
-          fetch-timeout=120000
-          network-timeout=120000
-          loglevel=warn
-          legacy-peer-deps=true
-          EOF
 
       # Install Dependencies
       - name: Install Dependencies
@@ -92,6 +92,8 @@ jobs:
           ls -la node_modules/@swc || true
           ls -la node_modules/@swc/core-linux-x64-gnu || true
           npm config list -l | grep -E "optional|omit|fetch-|network-|audit|fund|progress" || true
+          echo "---- .npmrc.ci ----"
+          cat .npmrc.ci || true
 
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
