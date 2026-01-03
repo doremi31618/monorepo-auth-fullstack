@@ -80,6 +80,16 @@ jobs:
         timeout-minutes: 60
         run: npm ci --foreground-scripts --include=optional
 
+      - name: Inspect installed platform packages
+        if: always()
+        run: |
+          echo "== @esbuild =="
+          ls -la node_modules/@esbuild || true
+          echo "== @swc =="
+          ls -la node_modules/@swc || true
+          echo "== npm ls (selected) =="
+          npm ls @esbuild/linux-x64 @swc/core-linux-x64-gnu --depth=0 || true
+
       - name: Verify platform binaries installed
         run: |
           node -e "const fs=require('fs'); const required=[['esbuild binary','node_modules/@esbuild/linux-x64/bin/esbuild'],['swc binding','node_modules/@swc/core-linux-x64-gnu/swc.linux-x64-gnu.node']]; const missing=required.filter(([,path])=>!fs.existsSync(path)); if (missing.length) { console.error('❌ platform binary files missing:'); missing.forEach(([name,path])=>console.error(` - ${name}: ${path}`)); console.error('Likely causes: lockfile missing entries, download failure, or config omitting optional deps.'); process.exit(1); } console.log('✅ platform binary files present');"
