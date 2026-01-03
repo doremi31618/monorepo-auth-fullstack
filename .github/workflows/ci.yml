@@ -79,6 +79,17 @@ jobs:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
         run: npm ci --foreground-scripts --include=optional --no-audit --fund=false
 
+      - name: Verify platform binaries installed
+        run: |
+          if [ ! -d node_modules/@esbuild/linux-x64 ]; then
+            echo "Missing node_modules/@esbuild/linux-x64"
+            exit 1
+          fi
+          if [ ! -d node_modules/@swc/core-linux-x64-gnu ]; then
+            echo "Missing node_modules/@swc/core-linux-x64-gnu"
+            exit 1
+          fi
+
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
 
