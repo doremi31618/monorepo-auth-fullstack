@@ -77,7 +77,6 @@ jobs:
         timeout-minutes: 60
         env:
           NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/.npmrc.ci
-          NPM_CONFIG_GLOBALCONFIG: ${{ github.workspace }}/.npmrc.ci
           NX_DAEMON: false
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
         run: npm ci --foreground-scripts --include=optional
