@@ -47,7 +47,7 @@ jobs:
 
       - name: Verify lockfile contains platform binaries
         run: |
-          node -e "const s=require('fs').readFileSync('package-lock.json','utf8'); const required=['@esbuild/linux-x64','@swc/core-linux-x64-gnu']; const missing=required.filter((dep)=>!s.includes(dep)); if (missing.length) { console.error('❌ package-lock.json missing platform binaries:', missing.join(', ')); console.error('Fix: regenerate package-lock.json with optional deps enabled, then commit it.'); process.exit(1); } console.log('✅ lockfile contains required platform binaries');"
+          node -e "const s=require('fs').readFileSync('package-lock.json','utf8'); const required=['@esbuild/linux-x64','@swc/core-linux-x64-gnu']; const missing=required.filter((dep)=>!s.includes(dep)); if (missing.length) { console.error('❌ package-lock.json missing platform binaries:', missing.join(', ')); console.error('Fix: regenerate package-lock.json with optional deps enabled, then commit it.'); process.exit(1); } console.log(`✅ lockfile contains required platform binaries: ${required.join(', ')}`);"
 
       - name: Upload runner diagnostics
         uses: actions/upload-artifact@v4
@@ -63,22 +63,19 @@ jobs:
           progress=false
           optional=true
           omit=
+          fetch-retries=5
+          fetch-retry-mintimeout=20000
+          fetch-retry-maxtimeout=120000
+          fetch-timeout=120000
+          network-timeout=120000
+          loglevel=warn
+          legacy-peer-deps=true
           EOF
 
       # Install Dependencies
       - name: Install Dependencies
         timeout-minutes: 60
         env:
-          NPM_CONFIG_FETCH_RETRIES: 5
-          NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 20000
-          NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 120000
-          NPM_CONFIG_FETCH_TIMEOUT: 120000
-          NPM_CONFIG_LEGACY_PEER_DEPS: true
-          NPM_CONFIG_LOGLEVEL: warn
-          NPM_CONFIG_NETWORK_TIMEOUT: 120000
-          NPM_CONFIG_OMIT: ""
-          NPM_CONFIG_OPTIONAL: true
-          NPM_CONFIG_PROGRESS: false
           NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/.npmrc.ci
           NPM_CONFIG_GLOBALCONFIG: ${{ github.workspace }}/.npmrc.ci
           NX_DAEMON: false
@@ -88,6 +85,13 @@ jobs:
       - name: Verify platform binaries installed
         run: |
           node -e "const fs=require('fs'); const required=[['esbuild binary','node_modules/@esbuild/linux-x64/bin/esbuild'],['swc binding','node_modules/@swc/core-linux-x64-gnu/swc.linux-x64-gnu.node']]; const missing=required.filter(([,path])=>!fs.existsSync(path)); if (missing.length) { console.error('❌ platform binary files missing:'); missing.forEach(([name,path])=>console.error(` - ${name}: ${path}`)); console.error('Likely causes: lockfile missing entries, download failure, or config omitting optional deps.'); process.exit(1); } console.log('✅ platform binary files present');"
+
+      - name: Debug binaries tree (on failure)
+        if: failure()
+        run: |
+          ls -la node_modules/@esbuild || true
+          ls -la node_modules/@swc || true
+          ls -la node_modules/@swc/core-linux-x64-gnu || true
 
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
