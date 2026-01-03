@@ -47,7 +47,7 @@ jobs:
 
       - name: Verify lockfile contains platform binaries
         run: |
-          node -e "const s=require('fs').readFileSync('package-lock.json','utf8'); const hasEsbuild=s.includes('@esbuild/linux-x64'); const hasSwc=s.includes('@swc/core-linux-x64-gnu'); if (!hasEsbuild || !hasSwc) { console.error('package-lock.json missing platform binaries. Regenerate lockfile with optional deps enabled.'); process.exit(1); }"
+          node -e "const s=require('fs').readFileSync('package-lock.json','utf8'); const required=['@esbuild/linux-x64','@swc/core-linux-x64-gnu']; const missing=required.filter((dep)=>!s.includes(dep)); if (missing.length) { console.error('❌ package-lock.json missing platform binaries:', missing.join(', ')); console.error('Fix: regenerate package-lock.json with optional deps enabled, then commit it.'); process.exit(1); } console.log('✅ lockfile contains required platform binaries');"
 
       - name: Upload runner diagnostics
         uses: actions/upload-artifact@v4
@@ -81,14 +81,7 @@ jobs:
 
       - name: Verify platform binaries installed
         run: |
-          if [ ! -d node_modules/@esbuild/linux-x64 ]; then
-            echo "Missing node_modules/@esbuild/linux-x64"
-            exit 1
-          fi
-          if [ ! -d node_modules/@swc/core-linux-x64-gnu ]; then
-            echo "Missing node_modules/@swc/core-linux-x64-gnu"
-            exit 1
-          fi
+          node -e "const fs=require('fs'); const required=['node_modules/@esbuild/linux-x64','node_modules/@swc/core-linux-x64-gnu']; const missing=required.filter((path)=>!fs.existsSync(path)); if (missing.length) { console.error('❌ platform binaries missing in node_modules:'); missing.forEach((path)=>console.error(` - ${path}`)); console.error('Likely causes: lockfile missing entries, download failure, or config omitting optional deps.'); process.exit(1); } console.log('✅ platform binaries present');"
 
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
