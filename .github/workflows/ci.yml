@@ -26,6 +26,7 @@ jobs:
     env:
       NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/.npmrc.ci
       NX_DAEMON: false
+      NX_CLOUD: "false"
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
     steps:
       # Checkout code
