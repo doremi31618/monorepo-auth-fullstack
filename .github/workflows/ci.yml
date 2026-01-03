@@ -41,6 +41,8 @@ jobs:
           node --version
           npm --version
           npm config get registry
+          free -h
+          df -h
 
       # Install Dependencies
       - name: Install Dependencies
