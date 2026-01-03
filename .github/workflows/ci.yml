@@ -66,7 +66,17 @@ jobs:
           NPM_CONFIG_OPTIONAL: false
           NPM_CONFIG_PROGRESS: false
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
-        run: npm ci --prefer-offline --no-audit --no-fund --timing
+        run: |
+          set -euo pipefail
+          for attempt in 1 2; do
+            echo "npm ci attempt ${attempt}"
+            if npm ci --prefer-offline --no-audit --no-fund --timing; then
+              exit 0
+            fi
+            echo "npm ci failed, cleaning cache and retrying..."
+            npm cache clean --force
+          done
+          exit 1
 
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
