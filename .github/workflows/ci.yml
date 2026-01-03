@@ -57,7 +57,13 @@ jobs:
 
       - name: Prepare CI npm config
         run: |
-          printf "" > .npmrc.ci
+          cat > .npmrc.ci << 'EOF'
+          fund=false
+          audit=false
+          progress=false
+          optional=true
+          omit=
+          EOF
 
       # Install Dependencies
       - name: Install Dependencies
@@ -81,7 +87,7 @@ jobs:
 
       - name: Verify platform binaries installed
         run: |
-          node -e "const fs=require('fs'); const required=['node_modules/@esbuild/linux-x64','node_modules/@swc/core-linux-x64-gnu']; const missing=required.filter((path)=>!fs.existsSync(path)); if (missing.length) { console.error('❌ platform binaries missing in node_modules:'); missing.forEach((path)=>console.error(` - ${path}`)); console.error('Likely causes: lockfile missing entries, download failure, or config omitting optional deps.'); process.exit(1); } console.log('✅ platform binaries present');"
+          node -e "const fs=require('fs'); const required=[['esbuild binary','node_modules/@esbuild/linux-x64/bin/esbuild'],['swc binding','node_modules/@swc/core-linux-x64-gnu/swc.linux-x64-gnu.node']]; const missing=required.filter(([,path])=>!fs.existsSync(path)); if (missing.length) { console.error('❌ platform binary files missing:'); missing.forEach(([name,path])=>console.error(` - ${name}: ${path}`)); console.error('Likely causes: lockfile missing entries, download failure, or config omitting optional deps.'); process.exit(1); } console.log('✅ platform binary files present');"
 
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
