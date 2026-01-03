@@ -43,6 +43,7 @@ jobs:
           else
             echo "no .npmrc" | tee ci-metrics/npmrc.txt
           fi
+          node -e "const s=require('fs').readFileSync('package-lock.json','utf8'); console.log('lock has @esbuild/linux-x64:', s.includes('@esbuild/linux-x64')); console.log('lock has @swc/core-linux-x64-gnu:', s.includes('@swc/core-linux-x64-gnu'));"
 
       - name: Upload runner diagnostics
         uses: actions/upload-artifact@v4
@@ -61,6 +62,8 @@ jobs:
           NPM_CONFIG_LEGACY_PEER_DEPS: true
           NPM_CONFIG_LOGLEVEL: warn
           NPM_CONFIG_NETWORK_TIMEOUT: 120000
+          NPM_CONFIG_OMIT: ""
+          NPM_CONFIG_OPTIONAL: true
           NPM_CONFIG_PROGRESS: false
           NX_DAEMON: false
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
