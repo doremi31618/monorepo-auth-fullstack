@@ -47,7 +47,7 @@ jobs:
 
       - name: Verify lockfile contains platform binaries
         run: |
-          node -e "const s=require('fs').readFileSync('package-lock.json','utf8'); const required=['@esbuild/linux-x64','@swc/core-linux-x64-gnu']; const missing=required.filter((dep)=>!s.includes(dep)); if (missing.length) { console.error('❌ package-lock.json missing platform binaries:', missing.join(', ')); console.error('Fix: regenerate package-lock.json with optional deps enabled, then commit it.'); process.exit(1); } console.log(`✅ lockfile contains required platform binaries: ${required.join(', ')}`);"
+          node -e "const s=require('fs').readFileSync('package-lock.json','utf8'); const required=['@esbuild/linux-x64','@swc/core-linux-x64-gnu']; const missing=required.filter((dep)=>!s.includes(dep)); if (missing.length) { console.error('❌ package-lock.json missing platform binaries:', missing.join(', ')); console.error('Fix: rm -rf node_modules package-lock.json && npm install && git add package-lock.json'); process.exit(1); } console.log(`✅ lockfile contains required platform binaries: ${required.join(', ')}`);"
 
       - name: Upload runner diagnostics
         uses: actions/upload-artifact@v4
@@ -80,7 +80,7 @@ jobs:
           NPM_CONFIG_GLOBALCONFIG: ${{ github.workspace }}/.npmrc.ci
           NX_DAEMON: false
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
-        run: npm ci --foreground-scripts --include=optional --no-audit --fund=false
+        run: npm ci --foreground-scripts --include=optional
 
       - name: Verify platform binaries installed
         run: |
@@ -92,6 +92,7 @@ jobs:
           ls -la node_modules/@esbuild || true
           ls -la node_modules/@swc || true
           ls -la node_modules/@swc/core-linux-x64-gnu || true
+          npm config list -l | grep -E "optional|omit|fetch-|network-|audit|fund|progress" || true
 
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
