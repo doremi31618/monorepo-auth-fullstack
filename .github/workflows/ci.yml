@@ -41,8 +41,15 @@ jobs:
           node --version
           npm --version
           npm config get registry
-          free -h
-          df -h
+          mkdir -p ci-metrics
+          free -h | tee ci-metrics/memory.txt
+          df -h | tee ci-metrics/disk.txt
+
+      - name: Upload runner diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: runner-diagnostics
+          path: ci-metrics
 
       # Install Dependencies
       - name: Install Dependencies
