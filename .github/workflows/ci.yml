@@ -36,6 +36,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-${{ steps.setup-node.outputs.node-version }}-node_modules-
 
+      - name: Show cache status
+        run: |
+          echo "node_modules cache hit: ${{ steps.cache-node-modules.outputs.cache-hit }}"
+
       - name: Show Node/npm versions
         run: |
           node --version
@@ -44,6 +48,7 @@ jobs:
           mkdir -p ci-metrics
           free -h | tee ci-metrics/memory.txt
           df -h | tee ci-metrics/disk.txt
+          npm config list | tee ci-metrics/npm-config.txt
 
       - name: Upload runner diagnostics
         uses: actions/upload-artifact@v4
@@ -53,7 +58,7 @@ jobs:
 
       # Install Dependencies
       - name: Install Dependencies
-        timeout-minutes: 20
+        timeout-minutes: 60
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         env:
           NPM_CONFIG_FETCH_RETRIES: 5
@@ -70,7 +75,7 @@ jobs:
           set -euo pipefail
           for attempt in 1 2; do
             echo "npm ci attempt ${attempt}"
-            if npm ci --prefer-offline --no-audit --no-fund --timing; then
+            if time npm ci --prefer-offline --no-audit --no-fund --timing --verbose; then
               exit 0
             fi
             echo "npm ci failed, cleaning cache and retrying..."
