@@ -21,24 +21,10 @@ jobs:
       
       # Setup Node.js
       - uses: actions/setup-node@v4
-        id: setup-node
         with:
           node-version: 20
           cache: npm
-
-      # Cache node_modules for faster installs
-      - name: Cache node_modules
-        id: cache-node-modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ steps.setup-node.outputs.node-version }}-node_modules-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ steps.setup-node.outputs.node-version }}-node_modules-
-
-      - name: Show cache status
-        run: |
-          echo "node_modules cache hit: ${{ steps.cache-node-modules.outputs.cache-hit }}"
+          cache-dependency-path: package-lock.json
 
       - name: Show Node/npm versions
         run: |
@@ -59,7 +45,6 @@ jobs:
       # Install Dependencies
       - name: Install Dependencies
         timeout-minutes: 60
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         env:
           NPM_CONFIG_FETCH_RETRIES: 5
           NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 20000
@@ -71,17 +56,7 @@ jobs:
           NPM_CONFIG_OPTIONAL: false
           NPM_CONFIG_PROGRESS: false
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
-        run: |
-          set -euo pipefail
-          for attempt in 1 2; do
-            echo "npm ci attempt ${attempt}"
-            if time npm ci --prefer-offline --no-audit --no-fund --timing --verbose; then
-              exit 0
-            fi
-            echo "npm ci failed, cleaning cache and retrying..."
-            npm cache clean --force
-          done
-          exit 1
+        run: npm ci --foreground-scripts --no-audit --fund=false
 
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
