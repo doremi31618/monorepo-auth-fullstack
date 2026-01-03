@@ -6,9 +6,9 @@
 
 > **Roadmap**: [R1 - Core Refactor](../Roadmap/R1-core.md)
 > **Guides**:
-> - [01. Logger & Error Handling](../implementation-guides/R1-01-logger-and-error-handling.md)
-> - [02. Domain Core & Auth Base](../implementation-guides/R1-02-domain-core-and-auth-base.md)
-> - [03. CI/CD & Scheduling](../implementation-guides/R1-03-cicd-and-scheduling.md)
+> - [01. Logger & Error Handling](../system-spec/R1-core/R1-01-logger-and-error-handling.md)
+> - [02. Domain Core & Auth Base](../system-spec/R1-core/R1-02-domain-core-and-auth-base.md)
+> - [03. CI/CD & Scheduling](../system-spec/R1-core/R1-03-cicd-and-scheduling.md)
 
 Last updated: 2026-01-02
 

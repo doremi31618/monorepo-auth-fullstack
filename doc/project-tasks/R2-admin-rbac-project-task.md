@@ -5,7 +5,7 @@
 
 > **Roadmap**: [R2 - Admin & RBAC](../roadmap/R2-admin-rbac.md)
 > **Guides**:
-> - [Implementation Guide](../implementation-guides/R2-01-admin-rbac-implementation.md) (Pending)
+> - [Implementation Guide](../system-spec/R2-admin-rbac/implementation-guide.md) (Pending)
 
 Last updated: 2026-01-02
 
@@ -46,6 +46,8 @@ Review action：依 Roadmap R2 規劃，本階段專注於建立 Admin Panel 基
 
 | Feature / capability | Status | Notes |
 | --- | --- | --- |
+| **Requirement Definition (PM)** | ⏳ Planned | Define sitemap, user flows, and detailed permission specs. |
+| **UI/UX Design** | ⏳ Planned | Admin panel mockups, component states, and design system updates. |
 | **Admin Panel Foundation** | ⏳ Planned | Layout (Sidebar/Topbar), Navigation Config, Protected Routes. |
 | **RBAC Data Model** | ⏳ Planned | Entities: Role, Permission, UserRole, RolePermission. |
 | **RBAC Core (Guard/Decorator)** | ⏳ Planned | `@Permission()`, RBAC Guard, Metadata scanner. |
@@ -80,6 +82,10 @@ Review action：依 Roadmap R2 規劃，本階段專注於建立 Admin Panel 基
 ⸻
 
 ## TODO (WBS) — ordered by dependency
+
+**Phase 0: Definition & Design**
+ • [ ] **PM**: Define admin panel features (Sitemap, User Flows, Permission Specs).
+ • [ ] **UI/UX Design**: Define frontend interface (Mockups, Design System updates).
 
 **Strategy A: Admin Panel Foundation (Frontend)**
  • [ ] Setup `/admin` layout (Sidebar, Topbar).

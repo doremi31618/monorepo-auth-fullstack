@@ -1,19 +1,58 @@
-# Project Documentation
+# Project Documentation Governance
 
-歡迎來到專案文檔中心。這裡存放了所有開發、架構與流程相關的文件。
+歡迎來到專案文檔中心。本專案採用 **Role-Driven Documentation** 策略，確保每份文件都有明確的負責人與受眾。
 
-## 📂 資料夾結構說明
+## 📂 文件結構與職責分工
 
-| 資料夾/檔案 | 說明 | 適用對象 |
-| --- | --- | --- |
-| `overall-coding-standards.md` | **開發總綱**。命名規範、測試原則、Git 流程。 | 全體工程師 (**必讀**) |
-| `onboarding/` | **新人入職**。環境建置、啟動指令、各端專屬規範。 | 新進人員 |
-| `implementation-guides/` | **實作指南**。特定技術解決方案的設計詳解 (How-to)。 | 開發與維護者 |
-| `project-tasks/` | **工作追蹤**。各階段 Milestone 的執行項目清單。 | PM / Tech Lead |
-| `Roadmap/` | **路線圖**。長期的產品規劃與架構藍圖。 | PM / Tech Lead |
-| `system-spec/` | **系統規格**。架構設計文件 (Architecture Views)。 | 架構師 / Tech Lead |
+我們將文件依照 **Workflow Role** 進行分類：
 
-## 📝 文件維護原則
-1. **保持同步**: 修改程式碼若涉及規範變更，請同步更新 `overall-coding-standards.md`。
-2. **實作細節**: 複雜功能的設計決策請記錄於 `implementation-guides`。
-3. **Onboarding**: 若發現環境建置流程有變，請務必更新 `onboarding/*.md`。
+| Role | 負責產出 (Artifacts) | 對應資料夾 | 說明 |
+| :--- | :--- | :--- | :--- |
+| **Product Manager** | Roadmap | `roadmap/` | 產品長遠規劃、核心目標 (Goal)、策略 (Strategy)。 |
+| **Project Manager** | Requirement Spec, WBS | `project-tasks/` | 專案執行追蹤。包含 **需求規格** 與 **WBS 進度表**。 |
+| **UI/UX Designer** | Product Spec, Mockups | `system-spec/` | 收錄 **產品規格 (Functional/Visual)** 與 UI/UX 設計資源連結。 |
+| **System Designer** | System Spec, Impl Guide | `system-spec/<feature>/` | 技術架構 (Tech Spec) 與實作指南 (Impl Guide) 統一存放於 Feature 資料夾。 |
+| **Developer** | Code | `system-spec/<feature>/` | 參考 Feature 資料夾內的 Guide 進行開發。 |
+
+---
+
+## 📁 資料夾詳細定義
+
+### 1. `roadmap/` (Product Direction)
+- **Owner**: Product Manager
+- **Content**: Milestone 規劃、商業目標、可行性分析。
+- **Format**: `R1-core.md`, `R2-admin-rbac.md`
+
+### 2. `project-tasks/` (Execution Tracking)
+- **Owner**: Project Manager
+- **Content**: 
+    - **Requirement Spec**: 詳細需求條列。
+    - **WBS**: 工作分解結構 (Work Breakdown Structure)。
+    - **Checklist**: 執行進度與驗收狀況。
+- **Format**: `R*-project-task.md`
+
+### 3. `system-spec/` (Blueprints & Manuals)
+- **Owner**: UI/UX Designer, System Designer, Developer
+- **Structure**: 按 Feature/Milestone 分類，例如 `system-spec/R2-admin-rbac/`。
+- **Content**:
+    - **Product Spec**: `product-spec.md` (機能與 UI 流程)
+    - **Technical Spec**: `technical-spec.md` (Schema API 架構)
+    - **Implementation Guide**: `implementation-guide.md` (實作步驟)
+
+
+### 5. `onboarding/` (Team Setup)
+- **Owner**: Tech Lead
+- **Content**: 新人入職指南、環境建置、Coding Standards。
+
+### 6. `share-knowledge/` (Knowledge Base)
+- **Owner**: All Team Members
+- **Content**: 技術分享、踩坑紀錄、讀書會筆記。
+
+---
+
+## 🔄 Workflow 範例
+1. **PdM** 在 `roadmap/` 定義 **R2 Admin** 目標。
+2. **PjM** 在 `project-tasks/` 建立 WBS 與 Requirement Spec。
+3. **UI/UX** 在 `system-spec/` 補充 Product Spec 與 Mockup。
+4. **System Designer** 在 `system-spec/` 設計架構，並撰寫 `implementation-guides/`。
+5. **Developer** 閱讀 `implementation-guides/` 開始 Coding。
