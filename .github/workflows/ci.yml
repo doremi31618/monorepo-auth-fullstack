@@ -55,6 +55,10 @@ jobs:
           name: runner-diagnostics
           path: ci-metrics
 
+      - name: Prepare CI npm config
+        run: |
+          printf "" > .npmrc.ci
+
       # Install Dependencies
       - name: Install Dependencies
         timeout-minutes: 60
@@ -69,6 +73,8 @@ jobs:
           NPM_CONFIG_OMIT: ""
           NPM_CONFIG_OPTIONAL: true
           NPM_CONFIG_PROGRESS: false
+          NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/.npmrc.ci
+          NPM_CONFIG_GLOBALCONFIG: ${{ github.workspace }}/.npmrc.ci
           NX_DAEMON: false
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
         run: npm ci --foreground-scripts --include=optional --no-audit --fund=false
