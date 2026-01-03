@@ -13,6 +13,10 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
+    env:
+      NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/.npmrc.ci
+      NX_DAEMON: false
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
     steps:
       # Checkout code
       - uses: actions/checkout@v4
@@ -33,7 +37,6 @@ jobs:
           audit=false
           progress=false
           optional=true
-          omit=
           fetch-retries=5
           fetch-retry-mintimeout=20000
           fetch-retry-maxtimeout=120000
@@ -75,10 +78,6 @@ jobs:
       # Install Dependencies
       - name: Install Dependencies
         timeout-minutes: 60
-        env:
-          NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/.npmrc.ci
-          NX_DAEMON: false
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
         run: npm ci --foreground-scripts --include=optional
 
       - name: Verify platform binaries installed
