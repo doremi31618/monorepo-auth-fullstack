@@ -43,7 +43,11 @@ jobs:
           else
             echo "no .npmrc" | tee ci-metrics/npmrc.txt
           fi
-          node -e "const s=require('fs').readFileSync('package-lock.json','utf8'); console.log('lock has @esbuild/linux-x64:', s.includes('@esbuild/linux-x64')); console.log('lock has @swc/core-linux-x64-gnu:', s.includes('@swc/core-linux-x64-gnu'));"
+          node -e "const s=require('fs').readFileSync('package-lock.json','utf8'); console.log('lock has @esbuild/linux-x64:', s.includes('@esbuild/linux-x64')); console.log('lock has @swc/core-linux-x64-gnu:', s.includes('@swc/core-linux-x64-gnu'));" | tee ci-metrics/lock-binaries.txt
+
+      - name: Verify lockfile contains platform binaries
+        run: |
+          node -e "const s=require('fs').readFileSync('package-lock.json','utf8'); const hasEsbuild=s.includes('@esbuild/linux-x64'); const hasSwc=s.includes('@swc/core-linux-x64-gnu'); if (!hasEsbuild || !hasSwc) { console.error('package-lock.json missing platform binaries. Regenerate lockfile with optional deps enabled.'); process.exit(1); }"
 
       - name: Upload runner diagnostics
         uses: actions/upload-artifact@v4
