@@ -221,33 +221,3 @@ jobs:
         if: always()
         run: |
           node -e "const fs=require('fs'); const required=[['esbuild binary','node_modules/@esbuild/linux-x64/bin/esbuild'],['swc binding','node_modules/@swc/core-linux-x64-gnu/swc.linux-x64-gnu.node']]; const missing=required.filter(([,p])=>!fs.existsSync(p)); if(missing.length){ console.error('❌ missing binary files:'); missing.forEach(([n,p])=>console.error(' - '+n+': '+p)); process.exit(1);} console.log('✅ binary files exist');"
-
-  regen_lock_linux:
-    if: ${{ github.event_name == 'workflow_dispatch' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Force npm registry
-        run: npm config set registry https://registry.npmjs.org/
-
-      - name: Regenerate lockfile
-        run: |
-          rm -rf node_modules package-lock.json
-          npm install
-          npm ls @esbuild/linux-x64 @swc/core-linux-x64-gnu --depth=0 || true
-
-      - name: Ensure lockfile exists
-        run: |
-          test -f package-lock.json || (echo "package-lock.json missing" && exit 1)
-
-      - name: Upload lockfile
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-package-lock
-          path: package-lock.json
-          if-no-files-found: error
