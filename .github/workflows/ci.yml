@@ -79,6 +79,18 @@ jobs:
         run: |
           node -e "const s=require('fs').readFileSync('package-lock.json','utf8'); const required=['@esbuild/linux-x64','@swc/core-linux-x64-gnu']; const missing=required.filter((dep)=>!s.includes(dep)); if (missing.length) { console.error('❌ package-lock.json missing platform binaries:', missing.join(', ')); console.error('Fix: rm -rf node_modules package-lock.json && npm install && git add package-lock.json'); process.exit(1); } console.log(`✅ lockfile contains required platform binaries: ${required.join(', ')}`);"
 
+      - name: Upload runner diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: runner-diagnostics
+          path: ci-metrics
+      
+      - name: Upload lockfile snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: lockfile-snapshot
+          path: package-lock.json
+
       # Install Dependencies
       - name: Install Dependencies
         timeout-minutes: 60
@@ -119,18 +131,6 @@ jobs:
           npm config list -l | grep -E "optional|omit|fetch-|network-|audit|fund|progress" || true
           echo "---- .npmrc.ci ----"
           cat .npmrc.ci || true
-
-      - name: Upload runner diagnostics
-        uses: actions/upload-artifact@v4
-        with:
-          name: runner-diagnostics
-          path: ci-metrics
-      
-      - name: Upload lockfile snapshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: lockfile-snapshot
-          path: package-lock.json
 
       # Run affected lint, test, build
       - run: npx nx affected -t lint --parallel=3
@@ -188,6 +188,12 @@ jobs:
           echo "---- .npmrc.ci ----"
           cat .npmrc.ci
 
+      - name: Upload lockfile snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: lockfile-snapshot-debug
+          path: package-lock.json
+
       - name: Optional clean cache (debug)
         if: ${{ inputs.clean_cache == 'true' }}
         run: |
@@ -215,12 +221,6 @@ jobs:
         if: always()
         run: |
           node -e "const fs=require('fs'); const required=[['esbuild binary','node_modules/@esbuild/linux-x64/bin/esbuild'],['swc binding','node_modules/@swc/core-linux-x64-gnu/swc.linux-x64-gnu.node']]; const missing=required.filter(([,p])=>!fs.existsSync(p)); if(missing.length){ console.error('❌ missing binary files:'); missing.forEach(([n,p])=>console.error(' - '+n+': '+p)); process.exit(1);} console.log('✅ binary files exist');"
-
-      - name: Upload lockfile snapshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: lockfile-snapshot-debug
-          path: package-lock.json
 
   regen_lock_linux:
     if: ${{ github.event_name == 'workflow_dispatch' }}
