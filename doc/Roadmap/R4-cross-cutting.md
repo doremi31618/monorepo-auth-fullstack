@@ -16,7 +16,12 @@
 	•	運行過程有完整紀錄（Core Logging）
 	•	未來能整合 APM（如 Datadog、OpenTelemetry）
 
-此 Milestone 的目標是把「產品級系統」需要的維運基礎建設全部打好，讓你的 SaaS 產品能安全地支持客戶、Log 與維運能快速定位問題、未來能支援監控與 SLA 要求。
+主要目標：將系統從「功能堆疊」升級為「行為與事件驅動平台」。
+	•	M4 是教育平台的「轉接頭」，不只是 Infra
+	•	建立 **Domain Event Bus**：作為學習事件、推薦系統、AI 分析的基礎
+	•	**Queryable Audit**：不僅記錄，要能查 (API/UI)，並支援 PII Masking
+	•	**Behavior Observability**：不僅看 Health，要看學習卡在哪 (Learning Metrics)
+	•	**Behavior i18n**: 在 Event 層級注入 `locale` 上下文，追蹤學習行為的語言維度
 
 ⸻
 
@@ -64,7 +69,8 @@
 	•	ip
 	•	user_agent
 	•	timestamp
-	•	Admin 有 UI 可查看最近操作紀錄
+	•	Admin 有 UI 可查看最近操作紀錄 (Filter & Pagination)
+	•	支援 PII Masking (Email/Token 遮罩)
 	•	RBAC 整合（無權限的 user 不可看）
 	•	系統自動記錄以下事件：
 	•	user login / logout
@@ -213,19 +219,17 @@ Actions：
 
 ⸻
 
-### Strategy F：系統事件中心（Event Bus）
+### Strategy F：系統事件中心（Domain Event Bus）
 
 Actions：
-	•	建立 EventBus（簡易 Observer pattern）
-	•	Moduels 可 dispatch 事件：
-
-this.eventBus.emit('post.published', payload);
-
+	•	定位：M4 Event Bus 不是為了背景任務，而是為了「行為資料流」
+	•	定義 Event Naming 規範 (e.g. `user.logged_in`, `content.published`, `learning.completed`)
+	•	Outbox Pattern 設計 (預留)：確保 DB 與 Event 發送的一致性
+	•	預留 `learning_events` (append-only) 規格，供未來 AI/Tutor 使用
+	•	**i18n Context**: Event payload 必須包含 `locale` 欄位 (e.g. `{ user_id, verb, object, context, locale }`)
 	•	其他模組可監聽：
 
-this.eventBus.on('post.published', handler);
-
-	•	未來可改接 RabbitMQ / Kafka
+	  this.eventBus.on('learning.completed', handler); // e.g. unlock next chapter
 
 ⸻
 

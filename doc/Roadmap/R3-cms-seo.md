@@ -23,10 +23,11 @@
 ⸻
 
 ## ⚠️ Feasibility 補充（範圍、效能、工作流）
-	•	縮小第一版範圍：僅 Post，功能鎖定 draft/publish、基本 metadata、Tiptap 基本工具列；版本控制/標籤/自動儲存可延後
-	•	媒體與效能：若無 S3/CDN，先關閉圖片或限制檔案大小；列表與渲染需加 cache（etag 或 CDN）以避免熱門文章壓力
-	•	發佈流程：確認是否需要審核/排程發佈；如需要，定義 minimal workflow（review→publish）與權限組合
-	•	SEO 檢核：slug 唯一性、meta length 驗證、可選 sitemap 生成；公開頁面需防止未發佈內容被快取
+	•	Feasibility: 縮小第一版範圍：僅 Post，功能鎖定 draft/publish、基本 metadata、Tiptap 基本工具列；版本控制/標籤/自動儲存可延後
+	•	**Platform Assets**: Asset / File 不是 CMS 專屬，而是平台層級 (file_objects)，CMS 只是 Consumer。需定義 `upload -> metadata -> reference` 流程
+	•	**Content i18n Hook**: 建立 `Content Locale Model` (posts -> 1:N -> post_contents with `locale`)，CMS v1 支援手動切換語言編輯，不做自動翻譯
+	•	**Preview**: 實作 Preview Token 機制，允許未登入者透過時效性 Token 預覽草稿
+	•	**Exclusions**: 刻意不做全文搜尋、複雜 Block Schema、Sitemap/CDN 優化 (M4+)
 	•	回溯與觀測：編輯/發佈/刪除寫入 audit log；Tiptap JSON 大小需設上限並在 API 層驗證
 
 ⸻
@@ -40,7 +41,9 @@
 	•	posts
 	•	post_content（存 JSON / Tiptap Document）
 	•	tags（可選）
+	•	tags（可選）
 	•	post_tags（可選）
+	•	`post_contents` table 需包含 `locale` 欄位 (支援多語系)
 	•	內容包含欄位：
 	•	title
 	•	slug（唯一值）
@@ -127,6 +130,7 @@
 
 Actions：
 	•	設計 posts + post_content table
+	•	**i18n**: post_content 增加 `locale` 欄位 (PK: post_id + locale)
 	•	post_content 採 JSON / JSONB 格式（儲存 Tiptap Document）
 	•	設計 slug 生成器（可根據 title 自動生成）
 	•	設計 content versioning（可選先不實作）
@@ -145,7 +149,16 @@ editor.commands.setContent(json) // 從 DB 載入
 
 
 	•	加入 Auto-save（onChange + debounce → PATCH update）
+	•	加入 Auto-save（onChange + debounce → PATCH update）
 	•	建立 Slash Command 或 Toolbar（未來可擴充）
+
+### Strategy I: Platform Asset System (New)
+
+Actions:
+	•	建立 `file_objects` table (id, url, mimetype, size, metadata)
+	•	實作 Upload API (Local/S3/GCS agnostic adapter)
+	•	CMS 整合：Editor 上傳圖片時，先呼叫 Upload API 取得 ID/URL，再插入 doc
+	•	不與 CMS 綁死，供未來 LMS/User 使用
 
 ⸻
 
@@ -180,9 +193,10 @@ Actions：
 Actions：
 	•	建立 /blog/[slug]/+page.ts
 	•	在 SSR 中拉文章內容
+	•	支援 Preview Token 驗證：若帶有 valid token，可讀取 Draft 狀態文章
 	•	使用 Tiptap Renderer（或自建 renderer）渲染畫面
 	•	設定 head metadata（title/desc/OG tags）
-	•	Only published post can be viewed
+	•	Only published post can be viewed (unless preview token provided)
 
 ⸻
 

@@ -1,10 +1,10 @@
-## 📌 Roadmap（含 Milestone 0）
+## 📌 Roadmap Overview (Milestone 0-5)
 
-| Milestone | 名稱                               | 狀態        | 內容摘要                                                       |
-|-----------|------------------------------------|-------------|----------------------------------------------------------------|
-| **0**     | Authentication & Identity Foundation | ✅ 已完成   | 登入、註冊、Google SSO、Refresh Token、Password Reset、Session lifecycle |
-| **1**     | Core Module 重構                   | ⏳ 下一階段 | config、db、logger、decorator、auth base 與共享模組化         |
-| **2**     | Admin + RBAC                       | 排程中      | 使用者管理、角色、權限、Admin UI                              |
-| **3**     | CMS 模組                           | 計畫中      | Tiptap editor、文章管理、SEO、頁面設定                         |
-| **4**     | Cross-cutting 能力                 | 計畫中      | 排程紀錄、Audit Log、健康檢查                                  |
-| **5**     | 部署 & 版本管理                    | 計畫中      | Core versioning、部署策略、DevOps 文件                        |
+| Milestone | 名稱 | 狀態 | 核心目標 (Goal) | 關鍵交付物 (Deliverables) |
+| :--- | :--- | :--- | :--- | :--- |
+| **0** | **Authentication Foundation** | ✅ Done | 建立身分驗證與 Session 系統 | Login, Register, Google OAuth, Session Mgmt |
+| **1** | **Core Refactor & Monorepo** | ✅ Done | 建立 Core Module 與 Nx 架構 | Nx Workspace, Core Module (Config/Logger), Distributed Job Queue |
+| **2** | **Admin & RBAC** | ⏳ In Progress | **建立平台治理層** (Identity × Permission) | Admin UI, RBAC Guard, Policy Hook, **i18n Hook (Gov)** |
+| **3** | **CMS & Assets** | 📅 Planned | **建立內容與資產層** (Content × Asset) | Tiptap Editor, **Platform Assets**, **Content Locale**, Preview |
+| **4** | **Behavior & Events** | 📅 Planned | **建立行為與事件層** (Event × Observability) | **Domain Event Bus (w/ Locale)**, Queryable Audit, Metrics |
+| **5** | **Deploy & DevOps** | 📅 Planned | **建立可持續交付能力** (Fearless Deploy) | CI/CD Pipeline, **Migration Checklist**, Environment Strategy |

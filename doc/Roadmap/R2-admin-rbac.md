@@ -25,6 +25,13 @@
 ## ⚠️ Feasibility 補充（範圍、模型、營運）
 	•	決定租戶/作用域模型：單租戶 vs 多租戶；必要時加入 org/project scope 與 resource ownership 檢查（ABAC 混搭）
 	•	Permission Schema 單一真相來源：由程式碼生成 seed + type 定義 + Admin UI 清單，避免手動漂移
+	•	**Policy Hook (ABAC)**：在 RBAC 之外預留 `can(user, action, resource)` 擴充點，支援未來「資源擁有者」檢查
+	•	**Governance i18n Hook**:
+		•	Permission Schema 增加 `labelKey` 支援多語
+		•	建立 `system_i18n_keys` (key, locale, value) 做死基礎字典
+		•	Admin UI 實作基礎 `t()` 顯示 (不做 runtime 編輯)
+	•	**Reliability**：定義 RBAC Cache 失效機制（Event-driven or Versioning），確保權限變更即時生效
+	•	**Audit**：Admin 操作（User/Role CRUD）需寫入最小 Audit Log（Who, Action, Target, Timestamp）
 	•	Break-glass 管理：預設 superadmin 帳號需有輪替/封存流程，並要求 MFA；所有 Admin 操作寫入 audit log
 	•	審批與安全：新增/修改角色需記錄變更人與原因；刪除/降權應有雙重確認
 	•	前後端一致性：前端按鈕/路由權限檢查需與後端 decorator 同源（共用權限 enum）
@@ -155,6 +162,7 @@ Actions：
 	•	檢查使用者角色
 	•	讀取該角色的 permissions
 	•	match & return 403 if unauthorized
+	•	預留 Policy Hook： `can(user, action, resource)` 介面
 	•	整合 AuthBase（Milestone 1）
 
 ⸻
@@ -212,8 +220,9 @@ export const PERMISSIONS = {
 
 	•	自動轉換為：
 	•	DB table seed
-	•	Admin UI 清單
+	•	Admin UI 清單 (使用 helper 轉換 `permission.{module}.{action}` key)
 	•	Type-safe permission enums
+	•	**i18n Support**: Schema 結構預留 `labelKey` 欄位
 
 ⸻
 
@@ -227,6 +236,9 @@ Actions：
 	•	撰寫 Testing Guide
 	•	RBAC guard 單元測試
 	•	Admin API 測試
+	•	**Reliability**
+	•	實作 Cache Invalidation（當 Role 被修改時，清除相關 User Cache）
+	•	實作 Minimal Audit Log interceptor
 
 ⸻
 

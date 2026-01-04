@@ -194,7 +194,10 @@ pnpm db:push (local only)
 	•	部署時自動執行 migration
 	•	設定 migration log table
 	•	有 down migration 以支援 rollback
-	•	建立 migration checklist（release 前必讀）
+	•	建立 migration checklist（release 前必讀）：
+	•	**Timing**: Deploy 前？中？後？
+	•	**Failure Strategy**: 阻斷 Deploy？還是 Forward Fix？
+	•	**Data Risk**: 是否涉及大量數據寫入？需鎖表嗎？
 
 ⸻
 

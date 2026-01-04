@@ -96,16 +96,19 @@ Review action：依 Roadmap R2 規劃，本階段專注於建立 Admin Panel 基
  • [ ] Create tables: `roles`, `permissions`, `user_roles`, `role_permissions`.
  • [ ] Implement Drizzle entities & relations.
  • [ ] Write Seed Script (Superadmin, Default Roles, Schema-based Permissions).
+ • [ ] Create `system_i18n_keys` table (key, locale, value) for static UI translation.
 
 **Strategy C: RBAC Core Infrastructure (Backend)**
  • [ ] Implement `@Permission()` decorator.
  • [ ] Implement `RBACGuard` (Check User -> Roles -> Permissions).
+ • [ ] Implement `PolicyHook` interface (for future ABAC expansion).
  • [ ] Integration test: Guard enforces 403 on unauthorized access.
 
 **Strategy D: User Management API (Admin)**
  • [ ] **User List**: Pagination, Search (email/name), Sorting, Filter (role/status).
  • [ ] **User Actions**: Create/Invite, Edit Profile, Soft Delete.
  • [ ] **Security Actions**: Force Password Reset, Toggle Active/Suspended status.
+ • [ ] **Audit**: Record basic audit log (Who, Action, Target) for all write operations.
  • [ ] **Role Assignment**: Assign/Unassign roles to user.
 
 **Strategy E: Role & Permission API**
@@ -119,13 +122,14 @@ Review action：依 Roadmap R2 規劃，本階段專注於建立 Admin Panel 基
  • [ ] **Permissions UI**: Multi-select/Tree view for assigning permissions to roles.
 
 **Strategy G: Permission Schema & Automation**
- • [ ] Define `PERMISSION_SCHEMA` constant.
+ • [ ] Define `PERMISSION_SCHEMA` constant (include `labelKey` for i18n).
  • [ ] Auto-generate TypeScript enums/types from schema.
  • [ ] Ensure Seed script syncs DB with Schema.
 
 **Strategy H: Documentation & DX**
  • [ ] Write RBAC Integration Guide (How to add new permissions).
  • [ ] Document Admin API usage.
+ • [ ] Implement RBAC Cache Invalidation strategy.
 
 ⸻
 
