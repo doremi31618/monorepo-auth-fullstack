@@ -108,3 +108,39 @@
 
 3.  **RWD**:
     優先採用 Mobile-First 策略。側邊欄在 `md` (768px) 以下自動隱藏。
+
+## 7. 程式碼組織規範 (Code Slicing)
+
+採用 **Feature-Based Slicing** (功能切分) 策略，將相關業務邏輯集中管理。
+
+### 7.1 Directory Structure
+```
+src/
+├── routes/                  # SvelteKit Routing (Pages & Layouts)
+│   ├── (app)/               # C-side (User) routes
+│   └── (admin)/             # Admin-side routes
+│       └── admin/
+│           ├── +layout.svelte
+│           ├── users/       # Page: /admin/users
+│           └── roles/       # Page: /admin/roles
+├── lib/
+│   ├── components/
+│   │   └── ui/              # Shared atomic components (shadcn/ui)
+│   ├── features/            # Feature Modules (Logic Core)
+│   │   ├── admin-users/     # Domain: Admin User Management
+│   │   │   ├── components/  # Feature-specific components
+│   │   │   │   ├── UserTable.svelte
+│   │   │   │   └── UserForm.svelte
+│   │   │   ├── api.ts       # API requests
+│   │   │   ├── schemas.ts   # Zod validation schemas
+│   │   │   └── types.ts     # Feature specific types
+│   │   └── admin-roles/     # Domain: Admin Role Management
+│   └── utils/               # Shared utilities
+```
+
+### 7.2 Rules
+1.  **Pages are Shells**: `+page.svelte` 應該只負責處理 Data Loading 與 Layout，主要內容應引入 `features/<domain>/components` 內的 Controller Component。
+2.  **Shared vs Feature**:
+    - 通用組件 (Button, Card) 放 `lib/components/ui`。
+    - 業務組件 (UserList, PermissionTree) 放 `lib/features/<domain>/components`。
+3.  **Colocation**: API calls, Zod schemas, Types 與 Component 放在同一個 Feature 資料夾下。

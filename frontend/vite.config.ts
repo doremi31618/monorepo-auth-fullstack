@@ -2,13 +2,14 @@
 /// <reference types="vitest/config" />
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { defaultClientConditions, defaultServerConditions, defineConfig } from 'vite';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
 const dirname =
 	typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
+const customConditions = ['monorepo-system-template'];
 
 // Workaround for Nx graph generation where CWD is root but sveltekit expects project root
 const originalCwd = process.cwd();
@@ -27,11 +28,17 @@ const config = defineConfig({
 	root: dirname,
 	plugins: [tailwindcss(), sveltekit()],
 	resolve: {
-		conditions: ['monorepo-system-template']
+		alias: [
+			{
+				find: /^svelte$/,
+				replacement: path.resolve(dirname, '../node_modules/svelte')
+			}
+		],
+		conditions: [...customConditions, ...defaultClientConditions]
 	},
 	ssr: {
 		resolve: {
-			conditions: ['monorepo-system-template']
+			conditions: [...customConditions, ...defaultServerConditions]
 		}
 	},
 	test: {
@@ -69,4 +76,3 @@ if (changedCwd) {
 }
 
 export default config;
-

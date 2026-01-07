@@ -1,13 +1,14 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from "@nestjs/common";
 import { LoggerService } from "../logger/logger.service.js";
-import { tap } from "rxjs";
+import { tap } from "rxjs/operators";
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
     constructor(private readonly logger: LoggerService) {
         this.logger.setContext(LoggingInterceptor.name);
     }
-    intercept(context: ExecutionContext, next: CallHandler) {
+    intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         const request = context.switchToHttp().getRequest();
         const { method, url } = request;
         const now = Date.now();

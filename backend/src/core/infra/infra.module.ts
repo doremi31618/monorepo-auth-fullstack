@@ -4,7 +4,7 @@ import { MailModule } from './mail/mail.module.js';
 import { LoggerModule } from './logger/logger.module.js';
 import { ExceptionModule } from './exception/exception.module.js';
 import { InterceptorModule } from './interceptor/interceptor.module.js';
-import { SchedulingModule } from './scheduling/scheduling.module';
+import { SchedulingModule } from './scheduling/scheduling.module.js';
 
 @Module({
     imports: [DbModule, MailModule, LoggerModule, ExceptionModule, InterceptorModule, SchedulingModule],

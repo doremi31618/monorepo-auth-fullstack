@@ -8,22 +8,24 @@ import { DbModule } from '../../infra/db/db.module.js';
 import { GoogleService } from './google/google.service.js';
 import { GoogleController } from './google/google.controller.js';
 import { MailModule } from '../../infra/mail/mail.module.js';
+import { SchedulingModule } from '../../infra/scheduling/scheduling.module.js';
 import authConfig from './auth.config.js';
 import { ConfigModule } from '@nestjs/config';
 @Module({
 	imports: [
 		ConfigModule.forFeature(authConfig),
-		UserModule, 
-		DbModule, 
-		MailModule],
+		UserModule,
+		DbModule,
+		MailModule,
+		SchedulingModule
+	],
 	controllers: [AuthController, GoogleController],
 	providers: [
 		AuthService,
 		SessionCleanupService,
 		SessionRepository,
-		DbModule,
 		GoogleService
 	],
 	exports: [AuthService, SessionCleanupService, SessionRepository]
 })
-	export class AuthModule { }
+export class AuthModule { }

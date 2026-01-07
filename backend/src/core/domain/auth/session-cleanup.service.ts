@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { SessionRepository } from './auth.repository.js';
-import { OnModuleInit } from '@nestjs/common';
-import { SchedulingService } from 'src/core/infra/scheduling/scheduling.service.js';
+import { JobSchedulerPort } from '../../infra/scheduling/scheduling.port.js';
 
 @Injectable()
 export class SessionCleanupService implements OnModuleInit {
@@ -12,23 +11,24 @@ export class SessionCleanupService implements OnModuleInit {
 	}
 	constructor(
 		private readonly sessionRepository: SessionRepository,
-		private readonly schedulingService: SchedulingService
+		private readonly schedulingService: JobSchedulerPort
 	) { }
 
 	onModuleInit() {
 
 		//register job handlers
 		//register cleanupExpiredSessions job
-		this.schedulingService.registerHandler(this.jobs['cleanupExpiredSessions'], async ()=>{
-			return this.sessionRepository.cleanupExpiredSessions();
+		this.schedulingService.registerHandler(this.jobs['cleanupExpiredSessions'], async () => {
+			await this.sessionRepository.cleanupExpiredSessions();
 		})
 
 		//register cleanupExpiredRefreshTokens job
-		this.schedulingService.registerHandler(this.jobs['cleanupExpiredRefreshTokens'], async ()=>{
-			return this.sessionRepository.cleanupExpiredRefreshTokens();
+		this.schedulingService.registerHandler(this.jobs['cleanupExpiredRefreshTokens'], async () => {
+			await this.sessionRepository.cleanupExpiredRefreshTokens();
 		})
-		
+
 	}
+
 	@Cron(CronExpression.EVERY_DAY_AT_1AM)
 	async cleanupExpiredSessions() {
 		this.schedulingService.schedule(
