@@ -84,8 +84,8 @@ Review action：依 Roadmap R2 規劃，本階段專注於建立 Admin Panel 基
 ## TODO (WBS) — ordered by dependency
 
 **Phase 0: Definition & Design**
- • [ ] **PM**: Define admin panel features (Sitemap, User Flows, Permission Specs).
- • [ ] **UI/UX Design**: Define frontend interface (Mockups, Design System updates).
+ • [x] **PM**: Define admin panel features (Sitemap, User Flows, Permission Specs).
+ • [x] **UI/UX Design**: Define frontend interface (Mockups, Design System updates).
 
 **Strategy A: Admin Panel Foundation (Frontend)**
  • [ ] Setup `/admin` layout (Sidebar, Topbar).
