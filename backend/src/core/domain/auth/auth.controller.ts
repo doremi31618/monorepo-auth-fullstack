@@ -39,10 +39,17 @@ const refreshCookieBaseOptions = {
 };
 const refreshCookieMaxAge = 1000 * 60 * 60 * 24 * 30; // 30 days
 
+import { LoggerService } from '../../infra/logger/logger.service.js';
+
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-	constructor(private readonly authService: AuthService) { }
+	constructor(
+		private readonly authService: AuthService,
+		private readonly logger: LoggerService
+	) {
+		this.logger.setContext(AuthController.name);
+	}
 
 	@UseGuards(AuthGuard)
 	@Get('testguard')
@@ -79,7 +86,7 @@ export class AuthController {
 		@Body() dto: LoginDto,
 		@NestResponse({ passthrough: true }) response: Response
 	) {
-		console.log('body', dto);
+		this.logger.log({ message: 'login attempt', email: dto.email });
 		const result = await this.authService.login(dto);
 		// set refresh token in cookie
 		response.cookie('refreshToken', result.refreshToken, {

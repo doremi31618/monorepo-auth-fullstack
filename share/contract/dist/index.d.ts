@@ -1,4 +1,4 @@
-export * from './lib/contract.js';
-export * from './lib/api/user.js';
-export * from './lib/api/common.js';
+export * from './lib/api/common';
+export * from './lib/api/user';
+export * from './lib/search';
 //# sourceMappingURL=index.d.ts.map

@@ -1,7 +1,4 @@
-function We() {
-  return "contract";
-}
-var fe = (
+var le = (
   /** @class */
   /* @__PURE__ */ (function() {
     function e(t) {
@@ -32,7 +29,7 @@ var fe = (
             validationTypeOptions: i.options,
             validationOptions: s
           };
-          r.push(new fe(o));
+          r.push(new le(o));
         });
       }), r;
     }, e;
@@ -63,8 +60,8 @@ var _e = function(e) {
   var n = r.call(e), i, s = [], o;
   try {
     for (; (t === void 0 || t-- > 0) && !(i = n.next()).done; ) s.push(i.value);
-  } catch (f) {
-    o = { error: f };
+  } catch (l) {
+    o = { error: l };
   } finally {
     try {
       i && !i.done && (r = n.return) && r.call(n);
@@ -77,7 +74,7 @@ var _e = function(e) {
   if (r || arguments.length === 2) for (var n = 0, i = t.length, s; n < i; n++)
     (s || !(n in t)) && (s || (s = Array.prototype.slice.call(t, 0, n)), s[n] = t[n]);
   return e.concat(s || Array.prototype.slice.call(t));
-}, le = (
+}, fe = (
   /** @class */
   (function() {
     function e() {
@@ -106,7 +103,7 @@ var _e = function(e) {
         r[n.propertyName] || (r[n.propertyName] = []), r[n.propertyName].push(n);
       }), r;
     }, e.prototype.getTargetValidationMetadatas = function(t, r, n, i, s) {
-      var o, f, u = function(a) {
+      var o, l, u = function(a) {
         return typeof a.always < "u" ? a.always : a.groups && a.groups.length ? !1 : n;
       }, g = function(a) {
         return !!(i && (!s || !s.length) && a.groups && a.groups.length);
@@ -124,7 +121,7 @@ var _e = function(e) {
         o = { error: a };
       } finally {
         try {
-          b && !b.done && (f = x.return) && f.call(x);
+          b && !b.done && (l = x.return) && l.call(x);
         } finally {
           if (o) throw o.error;
         }
@@ -146,7 +143,7 @@ var _e = function(e) {
 );
 function ee() {
   var e = me();
-  return e.classValidatorMetadataStorage || (e.classValidatorMetadataStorage = new le()), e.classValidatorMetadataStorage;
+  return e.classValidatorMetadataStorage || (e.classValidatorMetadataStorage = new fe()), e.classValidatorMetadataStorage;
 }
 var te = (
   /** @class */
@@ -200,7 +197,7 @@ function Me(e) {
   var t;
   if (e.validator instanceof Function) {
     t = e.validator;
-    var r = ce(le).getTargetValidatorConstraints(e.validator);
+    var r = ce(fe).getTargetValidatorConstraints(e.validator);
     if (r.length > 1)
       throw "More than one implementation of ValidatorConstraintInterface found for validator on: ".concat(e.target.name, ":").concat(e.propertyName);
   } else {
@@ -209,8 +206,8 @@ function Me(e) {
     (function() {
       function s() {
       }
-      return s.prototype.validate = function(o, f) {
-        return n.validate(o, f);
+      return s.prototype.validate = function(o, l) {
+        return n.validate(o, l);
       }, s.prototype.defaultMessage = function(o) {
         return n.defaultMessage ? n.defaultMessage(o) : "";
       }, s;
@@ -225,7 +222,7 @@ function Me(e) {
     constraintCls: t,
     constraints: e.constraints
   };
-  ee().addValidationMetadata(new fe(i));
+  ee().addValidationMetadata(new le(i));
 }
 function S(e, t) {
   return function(r) {
@@ -280,7 +277,7 @@ var Se = "isNotEmpty";
 function Fe(e) {
   return e !== "" && e !== null && e !== void 0;
 }
-function l(e) {
+function f(e) {
   return F({
     name: Se,
     validator: {
@@ -305,16 +302,16 @@ function De() {
     }
     function i(o) {
       "@babel/helpers - typeof";
-      return i = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(f) {
-        return typeof f;
-      } : function(f) {
-        return f && typeof Symbol == "function" && f.constructor === Symbol && f !== Symbol.prototype ? "symbol" : typeof f;
+      return i = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(l) {
+        return typeof l;
+      } : function(l) {
+        return l && typeof Symbol == "function" && l.constructor === Symbol && l !== Symbol.prototype ? "symbol" : typeof l;
       }, i(o);
     }
-    function s(o, f) {
+    function s(o, l) {
       (0, r.default)(o);
       var u, g;
-      i(f) === "object" ? (u = f.min || 0, g = f.max) : (u = arguments[1], g = arguments[2]);
+      i(l) === "object" ? (u = l.min || 0, g = l.max) : (u = arguments[1], g = arguments[2]);
       var h = encodeURI(o).split(/%..|./).length - 1;
       return h >= u && (typeof g > "u" || h <= g);
     }
@@ -332,8 +329,8 @@ function Oe() {
     }
     function n(i, s) {
       for (var o = 0; o < s.length; o++) {
-        var f = s[o];
-        if (i === f || r(f) && f.test(i))
+        var l = s[o];
+        if (i === l || r(l) && l.test(i))
           return !0;
       }
       return !1;
@@ -348,8 +345,8 @@ function Ee() {
       value: !0
     }), t.default = o;
     var r = i(/* @__PURE__ */ R()), n = i(/* @__PURE__ */ de());
-    function i(f) {
-      return f && f.__esModule ? f : { default: f };
+    function i(l) {
+      return l && l.__esModule ? l : { default: l };
     }
     var s = {
       require_tld: !0,
@@ -359,9 +356,9 @@ function Ee() {
       allow_wildcard: !1,
       ignore_max_length: !1
     };
-    function o(f, u) {
-      (0, r.default)(f), u = (0, n.default)(u, s), u.allow_trailing_dot && f[f.length - 1] === "." && (f = f.substring(0, f.length - 1)), u.allow_wildcard === !0 && f.indexOf("*.") === 0 && (f = f.substring(2));
-      var g = f.split("."), h = g[g.length - 1];
+    function o(l, u) {
+      (0, r.default)(l), u = (0, n.default)(u, s), u.allow_trailing_dot && l[l.length - 1] === "." && (l = l.substring(0, l.length - 1)), u.allow_wildcard === !0 && l.indexOf("*.") === 0 && (l = l.substring(2));
+      var g = l.split("."), h = g[g.length - 1];
       return u.require_tld && (g.length < 2 || !u.allow_numeric_tld && !/^([a-z\u00A1-\u00A8\u00AA-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,}|xn[a-z0-9-]{2,})$/i.test(h) || /\s/.test(h)) || !u.allow_numeric_tld && /^\d+$/.test(h) ? !1 : g.every(function(d) {
         return !(d.length > 63 && !u.ignore_max_length || !/^[a-z_\u00a1-\uffff0-9-]+$/i.test(d) || /[\uff01-\uff5e]/.test(d) || /^-|-$/.test(d) || !u.allow_underscores && /_/.test(d));
       });
@@ -387,12 +384,12 @@ function Ne() {
         return y && typeof Symbol == "function" && y.constructor === Symbol && y !== Symbol.prototype ? "symbol" : typeof y;
       }, i(d);
     }
-    var s = "(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])", o = "(".concat(s, "[.]){3}").concat(s), f = new RegExp("^".concat(o, "$")), u = "(?:[0-9a-fA-F]{1,4})", g = new RegExp("^(" + "(?:".concat(u, ":){7}(?:").concat(u, "|:)|") + "(?:".concat(u, ":){6}(?:").concat(o, "|:").concat(u, "|:)|") + "(?:".concat(u, ":){5}(?::").concat(o, "|(:").concat(u, "){1,2}|:)|") + "(?:".concat(u, ":){4}(?:(:").concat(u, "){0,1}:").concat(o, "|(:").concat(u, "){1,3}|:)|") + "(?:".concat(u, ":){3}(?:(:").concat(u, "){0,2}:").concat(o, "|(:").concat(u, "){1,4}|:)|") + "(?:".concat(u, ":){2}(?:(:").concat(u, "){0,3}:").concat(o, "|(:").concat(u, "){1,5}|:)|") + "(?:".concat(u, ":){1}(?:(:").concat(u, "){0,4}:").concat(o, "|(:").concat(u, "){1,6}|:)|") + "(?::((?::".concat(u, "){0,5}:").concat(o, "|(?::").concat(u, "){1,7}|:))") + ")(%[0-9a-zA-Z.]{1,})?$");
+    var s = "(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])", o = "(".concat(s, "[.]){3}").concat(s), l = new RegExp("^".concat(o, "$")), u = "(?:[0-9a-fA-F]{1,4})", g = new RegExp("^(" + "(?:".concat(u, ":){7}(?:").concat(u, "|:)|") + "(?:".concat(u, ":){6}(?:").concat(o, "|:").concat(u, "|:)|") + "(?:".concat(u, ":){5}(?::").concat(o, "|(:").concat(u, "){1,2}|:)|") + "(?:".concat(u, ":){4}(?:(:").concat(u, "){0,1}:").concat(o, "|(:").concat(u, "){1,3}|:)|") + "(?:".concat(u, ":){3}(?:(:").concat(u, "){0,2}:").concat(o, "|(:").concat(u, "){1,4}|:)|") + "(?:".concat(u, ":){2}(?:(:").concat(u, "){0,3}:").concat(o, "|(:").concat(u, "){1,5}|:)|") + "(?:".concat(u, ":){1}(?:(:").concat(u, "){0,4}:").concat(o, "|(:").concat(u, "){1,6}|:)|") + "(?::((?::".concat(u, "){0,5}:").concat(o, "|(?::").concat(u, "){1,7}|:))") + ")(%[0-9a-zA-Z.]{1,})?$");
     function h(d) {
       var y = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
       (0, r.default)(d);
       var x = (i(y) === "object" ? y.version : arguments[1]) || "";
-      return x ? x.toString() === "4" ? f.test(d) : x.toString() === "6" ? g.test(d) : !1 : h(d, {
+      return x ? x.toString() === "4" ? l.test(d) : x.toString() === "6" ? g.test(d) : !1 : h(d, {
         version: 4
       }) || h(d, {
         version: 6
@@ -407,7 +404,7 @@ function Ae() {
     Object.defineProperty(t, "__esModule", {
       value: !0
     }), t.default = B;
-    var r = u(/* @__PURE__ */ R()), n = u(/* @__PURE__ */ Oe()), i = u(/* @__PURE__ */ De()), s = u(/* @__PURE__ */ Ee()), o = u(/* @__PURE__ */ Ne()), f = u(/* @__PURE__ */ de());
+    var r = u(/* @__PURE__ */ R()), n = u(/* @__PURE__ */ Oe()), i = u(/* @__PURE__ */ De()), s = u(/* @__PURE__ */ Ee()), o = u(/* @__PURE__ */ Ne()), l = u(/* @__PURE__ */ de());
     function u(v) {
       return v && v.__esModule ? v : { default: v };
     }
@@ -437,7 +434,7 @@ function Ae() {
       return !0;
     }
     function B(v, a) {
-      if ((0, r.default)(v), a = (0, f.default)(a, g), a.require_display_name || a.allow_display_name) {
+      if ((0, r.default)(v), a = (0, l.default)(a, g), a.require_display_name || a.allow_display_name) {
         var _ = v.match(h);
         if (_) {
           var w = _[1];
@@ -596,19 +593,19 @@ class j {
 }
 c([
   p(),
-  l()
+  f()
 ], j.prototype, "token");
 c([
   p(),
-  l()
+  f()
 ], j.prototype, "refreshToken");
 c([
   C(),
-  l()
+  f()
 ], j.prototype, "userId");
 c([
   p(),
-  l()
+  f()
 ], j.prototype, "name");
 class I {
   token;
@@ -620,27 +617,27 @@ class I {
 }
 c([
   p(),
-  l()
+  f()
 ], I.prototype, "token");
 c([
   C(),
-  l()
+  f()
 ], I.prototype, "userId");
 c([
   p(),
-  l()
+  f()
 ], I.prototype, "name");
 c([
   k(),
-  l()
+  f()
 ], I.prototype, "expiresAt");
 c([
   k(),
-  l()
+  f()
 ], I.prototype, "createdAt");
 c([
   k(),
-  l()
+  f()
 ], I.prototype, "updatedAt");
 class pe {
   email;
@@ -648,18 +645,18 @@ class pe {
 }
 c([
   p(),
-  l()
+  f()
 ], pe.prototype, "email");
 c([
   p(),
-  l()
+  f()
 ], pe.prototype, "password");
 class He {
   userId;
 }
 c([
   C(),
-  l()
+  f()
 ], He.prototype, "userId");
 class Q {
   email;
@@ -668,22 +665,22 @@ class Q {
 }
 c([
   p(),
-  l()
+  f()
 ], Q.prototype, "email");
 c([
   p(),
-  l()
+  f()
 ], Q.prototype, "password");
 c([
   p(),
-  l()
+  f()
 ], Q.prototype, "name");
 class Qe {
   email;
 }
 c([
   p(),
-  l()
+  f()
 ], Qe.prototype, "email");
 class ge {
   token;
@@ -691,11 +688,11 @@ class ge {
 }
 c([
   p(),
-  l()
+  f()
 ], ge.prototype, "token");
 c([
   p(),
-  l()
+  f()
 ], ge.prototype, "password");
 class W {
   token;
@@ -704,15 +701,15 @@ class W {
 }
 c([
   p(),
-  l()
+  f()
 ], W.prototype, "token");
 c([
   k(),
-  l()
+  f()
 ], W.prototype, "expiresAt");
 c([
   p(),
-  l()
+  f()
 ], W.prototype, "resetLink");
 class ve {
   userId;
@@ -720,11 +717,11 @@ class ve {
 }
 c([
   C(),
-  l()
+  f()
 ], ve.prototype, "userId");
 c([
   p(),
-  l()
+  f()
 ], ve.prototype, "redirect");
 class G {
   email;
@@ -733,15 +730,15 @@ class G {
 }
 c([
   Re(),
-  l()
+  f()
 ], G.prototype, "email");
 c([
   p(),
-  l()
+  f()
 ], G.prototype, "name");
 c([
   p(),
-  l()
+  f()
 ], G.prototype, "password");
 export {
   G as CreateUserDto,
@@ -753,6 +750,5 @@ export {
   I as SessionDto,
   He as SignoutDto,
   Q as SignupDto,
-  j as UserIdentityDto,
-  We as contract
+  j as UserIdentityDto
 };

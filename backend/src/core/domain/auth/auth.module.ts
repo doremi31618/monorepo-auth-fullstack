@@ -11,13 +11,16 @@ import { MailModule } from '../../infra/mail/mail.module.js';
 import { SchedulingModule } from '../../infra/scheduling/scheduling.module.js';
 import authConfig from './auth.config.js';
 import { ConfigModule } from '@nestjs/config';
+import { LoggerModule } from '../../infra/logger/logger.module.js';
+
 @Module({
 	imports: [
 		ConfigModule.forFeature(authConfig),
 		UserModule,
 		DbModule,
 		MailModule,
-		SchedulingModule
+		SchedulingModule,
+		LoggerModule
 	],
 	controllers: [AuthController, GoogleController],
 	providers: [

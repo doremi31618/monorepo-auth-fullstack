@@ -11,21 +11,24 @@ import {
 	ResetResponseDto,
 	LoginResponseDto
 } from '@share/contract';
-// import { UserRepository } from '../user/user.repository.js';
-import { SessionRepository } from './auth.repository.js';
-import { MailService } from '../../infra/mail/mail.service.js';
 import { IUserService } from '../user/user.interface.js';
+import { MailService } from '../../infra/mail/mail.service.js';
+import { SessionRepository } from './auth.repository.js';
+import { LoggerService } from '../../infra/logger/logger.service.js';
 
-const SESSION_EXPIRATION_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
-const RESET_TOKEN_EXPIRATION_MS = 1000 * 60 * 5; // 5 minutes
+const SESSION_EXPIRATION_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
+const RESET_TOKEN_EXPIRATION_MS = 1000 * 60 * 60; // 1 hour
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private readonly userService: IUserService,
 		private readonly sessionRepository: SessionRepository,
-		private readonly mailService: MailService
-	) { }
+		private readonly mailService: MailService,
+		private readonly logger: LoggerService
+	) {
+		this.logger.setContext(AuthService.name);
+	}
 
 	async inspectSession(token: string): Promise<SessionDto> {
 		const session = await this.sessionRepository.getValidSessionByToken(token);
@@ -118,7 +121,7 @@ export class AuthService {
 			};
 		}
 		catch (error) {
-			console.error('refresh failed', error);
+			this.logger.error('refresh failed', error);
 			throw error;
 		}
 	}
@@ -164,7 +167,7 @@ export class AuthService {
 			await this.mailService.sendResetPasswordEmail(user.email, resetLink);
 		} catch (error) {
 			// 如果寄信失敗，仍回傳連結以便手動測試
-			console.error('sendResetPasswordEmail failed', error);
+			this.logger.error('sendResetPasswordEmail failed', error);
 		}
 		return {
 			token: token.token,
