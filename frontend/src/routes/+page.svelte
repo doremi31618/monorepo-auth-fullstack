@@ -9,7 +9,7 @@
 <header class="container mx-auto py-4 flex items-center justify-between">
     <div>logo</div>
     <NavigationMenu.Root>
-        <NavigationMenu.List class="flex items-center justify-between bg-amber-100  max-w-4xl">
+        <NavigationMenu.List class="flex items-center justify-between bg-background  max-w-4xl">
             
             <div class="flex items-center justify-between">
                 <NavigationMenu.Item>
@@ -29,21 +29,21 @@
 
 <section class="container mx-auto my-16">
     <h1 class="text-4xl font-bold">Welcome to the website</h1>
-    <p class="text-lg text-gray-600">This is a website about the website</p>
+    <p class="text-lg text-muted-foreground">This is a website about the website</p>
 </section>
 
 <section class="container mx-auto grid grid-cols-3 gap-4 my-16">
-    <div class="bg-amber-100 p-4 rounded-lg">
+    <div class="bg-secondary p-4 rounded-lg">
         <h2 class="text-2xl font-bold">Feature 1</h2>
-        <p class="text-gray-600">This is a feature of the website</p>
+        <p class="text-muted-foreground">This is a feature of the website</p>
     </div>
-    <div class="bg-amber-100 p-4 rounded-lg">
+    <div class="bg-secondary p-4 rounded-lg">
         <h2 class="text-2xl font-bold">Feature 2</h2>
-        <p class="text-gray-600">This is a feature of the website</p>
+        <p class="text-muted-foreground">This is a feature of the website</p>
     </div>
-    <div class="bg-amber-100 p-4 rounded-lg">
+    <div class="bg-secondary p-4 rounded-lg">
         <h2 class="text-2xl font-bold">Feature 3</h2>
-        <p class="text-gray-600">This is a feature of the website</p>
+        <p class="text-muted-foreground">This is a feature of the website</p>
     </div>
 </section>
 

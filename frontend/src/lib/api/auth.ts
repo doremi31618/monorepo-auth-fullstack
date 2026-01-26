@@ -1,25 +1,25 @@
 import { httpClient } from '../utils';
-import {type Session} from '@share/contract';
+import { type Session } from '@share/contract';
 
 
-export async function InspectSession(){
+export async function InspectSession() {
     return await httpClient.get<Session>('/auth/inspect');
 }
 
 export async function login(email: string, password: string) {
     return await httpClient.post<Session>('/auth/login', { email, password });
-    
+
 }
 
 export async function register(name: string, email: string, password: string) {
     return await httpClient.post<Session>('/auth/signup', { name, email, password });
 }
 
-export async function logout(){
-    return await httpClient.post<{userId: number}>('/auth/signout', {});
+export async function logout() {
+    return await httpClient.post<{ userId: number }>('/auth/signout', {});
 }
 
-export async function refresh(){
+export async function refresh() {
     return await httpClient.post<Session>('/auth/refresh', {});
 }
 

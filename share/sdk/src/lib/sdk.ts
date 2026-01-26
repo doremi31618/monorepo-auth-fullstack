@@ -5,3 +5,5 @@ export const SDK = {
   Frontend,
   // Backend
 }
+
+export { Frontend };

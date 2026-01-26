@@ -58,6 +58,35 @@ npm run dev        # 預設 http://localhost:5173
 4. **錯誤處理**：API 回傳需保留 `statusCode`、`message`；UI 需能顯示錯誤訊息而非直接丟例外。
 5. **可維護性**：共用常數、路由、API path 由 `src/lib/config` 管理；表單驗證邏輯抽成 util 方便重複使用。
 
+### 5-1. Permission Management (RBAC)
+前端透過 `permissionStore` 與 `PermissionGuard` 進行權限管理。
+
+-   **Initialization**: App 啟動或登入後，需呼叫 `permissionStore.loadPermissions()` 載入權限。
+    ```typescript
+    import { permissionStore } from '$lib/store/permissionStore';
+    
+    // In Layout or after Login
+    onMount(() => {
+        permissionStore.loadPermissions();
+    });
+    ```
+
+-   **Component Protection**: 使用 `<PermissionGuard>` 包裹需權限的 UI。
+    ```svelte
+    <script>
+      import PermissionGuard from '$lib/components/admin/PermissionGuard.svelte';
+    </script>
+
+    <PermissionGuard permission="users.create">
+      <button>Create User</button>
+    </PermissionGuard>
+    ```
+
+-   **Route Protection**:
+    -   簡易保護：在 `+layout.svelte` 檢查 Role 或 Store。
+    -   進階保護：在 `+page.ts` load function 中檢查 `permissionStore`，若 `!hasPermission` 則 throw redirect/error。
+
+
 ---
 
 ## 6. 上線前檢查清單

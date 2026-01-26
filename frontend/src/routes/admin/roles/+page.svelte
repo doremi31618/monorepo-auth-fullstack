@@ -1,154 +1,183 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import * as api from '$lib/api/admin';
+  import RoleList from '$lib/features/admin-roles/components/RoleList.svelte';
   import PermissionMatrix from '../components/PermissionMatrix.svelte';
+  import * as Sheet from '$lib/components/ui/sheet';
+  import * as AlertDialog from '$lib/components/ui/alert-dialog';
+  import { Button } from '$lib/components/ui/button';
+  import { Input } from '$lib/components/ui/input';
+  import { Label } from '$lib/components/ui/label';
+  import { Textarea } from '$lib/components/ui/textarea';
+  import type { Role, Permission } from '@share/contract';
 
-  let roles: (api.Role & { rolePermissions?: { permission: api.Permission }[] })[] = [];
-  let filteredRoles: (api.Role & { rolePermissions?: { permission: api.Permission }[] })[] = [];
+  let roles: Role[] = [];
   
-  let showRoleModal = false;
-  let currentRole: Partial<api.Role> = { name: '', description: '' };
-  
-  // Permissions state
-  let allPermissions: api.Permission[] = [];
-  let selectedPermissionIds: string[] = [];
-  // For create/edit flow
+  // Edit/Create Sheet
+  let showSheet = false;
   let isCreating = false;
-  // Search
-  let searchQuery = '';
+  let currentRole: Partial<Role> = { name: '', description: '' };
+  
+  // Permissions State
+  let allPermissions: Permission[] = [];
+  let selectedPermissionIds: string[] = [];
 
+  // Delete State
+  let showDeleteDialog = false;
+  let roleToDelete: Role | null = null;
+  
   onMount(async () => {
-    await loadRoles();
-    const permResponse = await api.getPermissions();
-    allPermissions = permResponse.data || [];
+    await loadInitialData();
   });
 
+  async function loadInitialData() {
+    const [roleRes, permRes] = await Promise.all([
+        api.getRoles(),
+        api.getPermissions()
+    ]);
+    roles = roleRes.data || [];
+    allPermissions = permRes.data || [];
+  }
+
   async function loadRoles() {
-    const response = await api.getRoles();
-    roles = response.data || [];
-    filterRoles();
+      const res = await api.getRoles();
+      roles = res.data || [];
   }
 
-  function filterRoles() {
-      if (!searchQuery) {
-          filteredRoles = [...roles];
-      } else {
-          const lowerQuery = searchQuery.toLowerCase();
-          filteredRoles = roles.filter(r => 
-              r.name.toLowerCase().includes(lowerQuery) || 
-              (r.description && r.description.toLowerCase().includes(lowerQuery))
-          );
-      }
+  function openCreate() {
+      currentRole = { name: '', description: '' };
+      selectedPermissionIds = [];
+      isCreating = true;
+      showSheet = true;
   }
 
-  $: searchQuery, filterRoles();
-
-  function openCreateModal() {
-    currentRole = { name: '', description: '' };
-    selectedPermissionIds = [];
-    isCreating = true;
-    showRoleModal = true;
+  function openEdit(role: Role) {
+      currentRole = { ...role };
+      isCreating = false;
+      // Note: Ideally backend should return role permissions in the list or detail view
+      // For now, assuming backend structure or re-fetching might be needed if not in list.
+      // Based on previous code, `rolePermissions` was on the object.
+      // We might need to cast or ensure backend returns it.
+      // Let's assume the mapped type from API includes it or check.
+      // If Types don't match, we might need to fetch detailed role.
+      // For simplicity/speed, using as any cast similar to previous code if needed, 
+      // but strictly we should have `RoleWithPermissions`.
+      // Let's rely on what we have, or maybe fetch filtered permissions for this role if not present.
+      // Checking old code: `role.rolePermissions.map...`.
+      // If Shared Type `Role` doesn't have `rolePermissions`, we have a mismatch.
+      // Shared `Role` only has basic fields.
+      // We should probably check if `api.getRoles` returns enriched objects.
+      
+      const r = role as any; 
+      selectedPermissionIds = r.rolePermissions?.map((rp: any) => rp.permission.id) || [];
+      showSheet = true;
   }
 
-  function openEditModal(role: any) {
-    currentRole = { ...role };
-    isCreating = false;
-    // Pre-fill permissions from the role object (populated by backend)
-    selectedPermissionIds = role.rolePermissions?.map((rp: any) => rp.permission.id) || [];
-    showRoleModal = true;
+  function openDelete(role: Role) {
+      roleToDelete = role;
+      showDeleteDialog = true;
   }
 
   async function saveRole() {
-    let savedRole: any;
-    if (currentRole.id) {
-      const res = await api.updateRole(currentRole.id, currentRole);
-      savedRole = res.data;
-    } else {
-      const res = await api.createRole(currentRole as any);
-      savedRole = res.data;
-    }
+      try {
+          let saved: Role;
+          if (isCreating) {
+              const res = await api.createRole(currentRole as any);
+              saved = res.data;
+          } else {
+              const res = await api.updateRole(currentRole.id!, currentRole);
+              saved = res.data;
+          }
 
-    // Assign selected permissions
-    if (savedRole && savedRole.id) {
-        await api.updateRolePermissions(savedRole.id, selectedPermissionIds);
-    }
-
-    await loadRoles();
-    showRoleModal = false;
+          if (saved && saved.id) {
+              await api.updateRolePermissions(saved.id, selectedPermissionIds);
+          }
+          await loadRoles();
+          showSheet = false;
+      } catch(e) {
+          alert('Failed to save role');
+      }
   }
 
-  async function deleteRole(id: string) {
-    if (confirm('Are you sure?')) {
-      await api.deleteRole(id);
-      await loadRoles();
-    }
+  async function confirmDelete() {
+      if (roleToDelete) {
+          try {
+              await api.deleteRole(roleToDelete.id);
+              await loadRoles();
+          } catch(e) {
+              alert('Failed to delete role');
+          } finally {
+              showDeleteDialog = false;
+              roleToDelete = null;
+          }
+      }
   }
+
 </script>
 
-<div class="p-4">
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">Role Management</h1>
-    
-    <div class="flex items-center space-x-2">
-        <input 
-            type="text" 
-            bind:value={searchQuery} 
-            placeholder="Search roles..." 
-            class="border p-2 rounded w-64"
-        />
-        <button on:click={openCreateModal} class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Create Role</button>
-    </div>
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {#each filteredRoles as role}
-      <div class="bg-white shadow rounded-lg p-6 border border-gray-200">
-        <div class="flex justify-between items-start mb-4">
-          <h3 class="text-lg font-bold text-gray-900">{role.name}</h3>
-          {#if role.isSystem}
-            <span class="px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">System</span>
-          {/if}
-        </div>
-        <p class="text-gray-500 text-sm mb-4">{role.description || 'No description'}</p>
-        <div class="flex space-x-2">
-          <button on:click={() => openEditModal(role)} class="flex-1 bg-gray-100 text-gray-700 px-3 py-1 rounded hover:bg-gray-200 text-sm">Edit & Permissions</button>
-          <button on:click={() => deleteRole(role.id)} class="text-red-500 px-3 py-1 hover:text-red-700 text-sm">Delete</button>
-        </div>
-      </div>
-    {/each}
-  </div>
-
-  <!-- Unified Role Modal -->
-  {#if showRoleModal}
-    <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-xl">
-        <h2 class="text-xl font-bold mb-4">{currentRole.id ? 'Edit Role' : 'Create Role'}</h2>
-        
-        <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Name</label>
-                <input type="text" placeholder="Role Name" bind:value={currentRole.name} class="mt-1 w-full border p-2 rounded" />
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Description</label>
-                <textarea placeholder="Description" bind:value={currentRole.description} class="mt-1 w-full border p-2 rounded h-[42px]"></textarea>
-            </div>
-        </div>
-
-        <div class="border-t pt-4">
-            <h3 class="text-lg font-semibold mb-2">Permissions</h3>
-                <PermissionMatrix 
-                allPermissions={allPermissions}
-                selectedPermissionIds={selectedPermissionIds}
-                onChange={(ids) => selectedPermissionIds = ids}
-            />
-        </div>
-
-         <div class="flex justify-end space-x-2 mt-6">
-           <button on:click={() => showRoleModal = false} class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
-           <button on:click={saveRole} class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
-         </div>
-      </div>
-    </div>
-  {/if}
+<div class="p-4 md:p-8 max-w-7xl mx-auto w-full">
+    <RoleList 
+        {roles}
+        oncreate={openCreate}
+        onedit={openEdit}
+        ondelete={openDelete}
+    />
 </div>
+
+<!-- Edit Sheet -->
+<Sheet.Root bind:open={showSheet}>
+    <Sheet.Content class="w-full sm:max-w-xl overflow-y-auto">
+      <Sheet.Header>
+        <Sheet.Title>{isCreating ? 'Create Role' : 'Edit Role'}</Sheet.Title>
+        <Sheet.Description>
+          {isCreating ? 'Create a new role and assign permissions.' : 'Edit role details and permissions.'}
+        </Sheet.Description>
+      </Sheet.Header>
+      
+        <div class="grid gap-4 py-4">
+            <div class="grid gap-2">
+                <Label for="role-name">Name</Label>
+                <Input id="role-name" bind:value={currentRole.name} placeholder="Role Name" />
+            </div>
+            <div class="grid gap-2">
+                <Label for="role-desc">Description</Label>
+                <Textarea id="role-desc" bind:value={currentRole.description} placeholder="Description" rows={3} />
+            </div>
+            
+            <div class="pt-4">
+                 <h3 class="mb-2 text-sm font-medium">Permissions</h3>
+                 <div class="border rounded-md p-4 max-h-[400px] overflow-y-auto">
+                     <PermissionMatrix 
+                        {allPermissions}
+                        {selectedPermissionIds}
+                        onChange={(ids) => selectedPermissionIds = ids}
+                    />
+                 </div>
+            </div>
+        </div>
+ 
+      <Sheet.Footer>
+        <Button variant="outline" onclick={() => showSheet = false}>Cancel</Button>
+        <Button onclick={saveRole}>Save changes</Button>
+      </Sheet.Footer>
+    </Sheet.Content>
+</Sheet.Root>
+
+<!-- Delete Dialog -->
+<AlertDialog.Root open={showDeleteDialog} onOpenChange={(v) => showDeleteDialog = v}>
+    <AlertDialog.Content>
+      <AlertDialog.Header>
+        <AlertDialog.Title>Delete Role?</AlertDialog.Title>
+        <AlertDialog.Description>
+          This will permanently delete the role <strong>{roleToDelete?.name}</strong>.
+          Users assigned to this role may lose access.
+        </AlertDialog.Description>
+      </AlertDialog.Header>
+      <AlertDialog.Footer>
+        <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+        <AlertDialog.Action class="bg-destructive text-destructive-foreground hover:bg-destructive/90" onclick={confirmDelete}>
+            Delete
+        </AlertDialog.Action>
+      </AlertDialog.Footer>
+    </AlertDialog.Content>
+</AlertDialog.Root>

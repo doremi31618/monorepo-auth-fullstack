@@ -68,6 +68,10 @@ export class AccessControlRepository extends BaseRepository {
         return this.db.delete(userRoles).where(and(eq(userRoles.userId, userId), eq(userRoles.roleId, roleId)));
     }
 
+    async removeAllRolesFromUser(userId: number) {
+        return this.db.delete(userRoles).where(eq(userRoles.userId, userId));
+    }
+
     async getUserPermissions(userId: number): Promise<string[]> {
         const result = await this.db
             .select({ permissionId: rolePermissions.permissionId })
@@ -123,10 +127,14 @@ export class AccessControlRepository extends BaseRepository {
             ? or(ilike(users.name, `%${options.search}%`), ilike(users.email, `%${options.search}%`))
             : undefined;
 
-        // Basic implementation for now, will enhance later
-        // Note: total count calculation is missing for proper pagination metadata, 
-        // strictly following current simplified implementation pattern.
-        return this.db.query.users.findMany({
+        // Calculate total count (simplified for Drizzle)
+        const allUsers = await this.db.query.users.findMany({
+            where: whereClause,
+            columns: { id: true }
+        });
+        const total = allUsers.length;
+
+        const data = await this.db.query.users.findMany({
             where: whereClause,
             with: {
                 userRoles: {
@@ -138,8 +146,21 @@ export class AccessControlRepository extends BaseRepository {
             limit: options?.limit,
             offset: options?.page && options?.limit ? (options.page - 1) * options.limit : undefined
         });
+
+        return {
+            data,
+            meta: {
+                total,
+                page: options?.page || 1,
+                limit: options?.limit || total
+            }
+        };
     }
     async updateUser(id: number, data: { name?: string; email?: string }) {
         return this.db.update(users).set(data).where(eq(users.id, id)).returning();
+    }
+
+    async deleteUser(id: number) {
+        return this.db.delete(users).where(eq(users.id, id)).returning();
     }
 }

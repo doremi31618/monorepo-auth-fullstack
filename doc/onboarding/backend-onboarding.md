@@ -92,6 +92,23 @@ Swagger 文件位於 `http://localhost:<PORT>/openapi`。
     - ✅ `AuthService` injects `IUserService` (Interface)。
     - ❌ `AuthService` injects `UserRepository` (Concrete Class)。
 - **Provider Export**: `UserModule` 必須 `exports: [IUserService]` 才能讓其他模組使用。
+    
+### 6-4. Access Control (RBAC) Governance
+本專案採用 Permission-based RBAC。
+-   **Seeding**:
+    -   權限定義檔位於 `core/infra/config/access-control.config.ts`。
+    -   系統啟動時 (`AccessControlService.onModuleInit`) 會自動掃描此檔，若 DB 無此 Role/Permission 則自動建立。
+    -   **如何新增權限**: 直接在 config 檔的 `permissions` array 新增一筆，重啟後端即可。
+-   **API Protection**:
+    -   **Guard**: 全域或 Controller 層級使用 `RBACGuard`。
+    -   **Decorator**: 使用 `@RequirePermissions('module.action')` 保護端點。
+    -   **範例**:
+        ```typescript
+        @Get()
+        @RequirePermissions('users.read')
+        findAll() { ... }
+        ```
+
 
 ---
 

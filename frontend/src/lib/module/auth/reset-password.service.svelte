@@ -80,10 +80,10 @@
 			/>
 		</Field.Field>
 		{#if errorMsg}
-			<Field.Description class="text-red-500">{errorMsg}</Field.Description>
+			<Field.Description class="text-destructive">{errorMsg}</Field.Description>
 		{/if}
 		{#if successMsg}
-			<Field.Description class="text-green-600">{successMsg}</Field.Description>
+			<Field.Description class="text-primary">{successMsg}</Field.Description>
 		{/if}
 		<Button type="submit" onclick={handleSubmit} disabled={isLoading}>
 			{#if isLoading}Submitting...{:else}Reset Password{/if}

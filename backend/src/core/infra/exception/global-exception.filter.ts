@@ -1,7 +1,15 @@
-import { type ApiResponse } from "@share/contract";
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, } from "@nestjs/common";
 import { Response, Request } from "express";
 // import { LoggerService } from "../logger/logger.service.js";
+
+type ApiResponse<T> = {
+    statusCode: number;
+    message: string;
+    error?: string;
+    data: T;
+    timestamp: string;
+    path: string;
+};
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {

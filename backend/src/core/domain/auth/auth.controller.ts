@@ -34,8 +34,8 @@ import { extractSessionToken } from './utils/token.util.js';
 const refreshCookieBaseOptions = {
 	httpOnly: true,
 	secure: process.env.NODE_ENV === 'production',
-	sameSite: 'strict' as const,
-	path: '/auth/refresh'
+	sameSite: 'lax' as const,
+	path: '/'
 };
 const refreshCookieMaxAge = 1000 * 60 * 60 * 24 * 30; // 30 days
 
@@ -156,6 +156,7 @@ export class AuthController {
 	) {
 		// get refresh token from cookie
 		const refreshToken = request.cookies['refreshToken'];
+		console.log(refreshToken);
 		if (!refreshToken) {
 			throw new UnauthorizedException('Refresh token not found');
 		}

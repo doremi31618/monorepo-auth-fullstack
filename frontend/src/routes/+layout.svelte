@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { ModeWatcher } from 'mode-watcher';
+	import { Toaster } from '$lib/components/ui/sonner';
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 
@@ -10,4 +12,6 @@
 	<script src="https://accounts.google.com/gsi/client" async></script>
 </svelte:head>
 
+<ModeWatcher />
+<Toaster />
 {@render children?.()}

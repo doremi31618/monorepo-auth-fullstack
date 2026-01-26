@@ -172,7 +172,7 @@ var te = (
 function ce(e) {
   return be.get(e);
 }
-var we = (
+var Me = (
   /** @class */
   (function() {
     function e(t, r, n) {
@@ -193,7 +193,7 @@ var we = (
     }), e;
   })()
 );
-function Me(e) {
+function we(e) {
   var t;
   if (e.validator instanceof Function) {
     t = e.validator;
@@ -211,7 +211,7 @@ function Me(e) {
       }, s.prototype.defaultMessage = function(o) {
         return n.defaultMessage ? n.defaultMessage(o) : "";
       }, s;
-    })(), ee().addConstraintMetadata(new we(t, e.name, e.async));
+    })(), ee().addConstraintMetadata(new Me(t, e.name, e.async));
   }
   var i = {
     type: e.name && te.isValid(e.name) ? e.name : te.CUSTOM_VALIDATION,
@@ -232,7 +232,7 @@ function S(e, t) {
 }
 function F(e, t) {
   return function(r, n) {
-    Me({
+    we({
       name: e.name,
       target: r.constructor,
       propertyName: n,
@@ -246,7 +246,7 @@ function Ie(e) {
   return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
 }
 var E = { exports: {} }, re;
-function R() {
+function q() {
   return re || (re = 1, (function(e, t) {
     Object.defineProperty(t, "__esModule", {
       value: !0
@@ -296,7 +296,7 @@ function De() {
     Object.defineProperty(t, "__esModule", {
       value: !0
     }), t.default = s;
-    var r = n(/* @__PURE__ */ R());
+    var r = n(/* @__PURE__ */ q());
     function n(o) {
       return o && o.__esModule ? o : { default: o };
     }
@@ -318,7 +318,7 @@ function De() {
     e.exports = t.default, e.exports.default = t.default;
   })(A, A.exports)), A.exports;
 }
-var T = { exports: {} }, V = { exports: {} }, ie;
+var T = { exports: {} }, P = { exports: {} }, ie;
 function Oe() {
   return ie || (ie = 1, (function(e, t) {
     Object.defineProperty(t, "__esModule", {
@@ -336,15 +336,15 @@ function Oe() {
       return !1;
     }
     e.exports = t.default, e.exports.default = t.default;
-  })(V, V.exports)), V.exports;
+  })(P, P.exports)), P.exports;
 }
-var q = { exports: {} }, oe;
+var R = { exports: {} }, oe;
 function Ee() {
   return oe || (oe = 1, (function(e, t) {
     Object.defineProperty(t, "__esModule", {
       value: !0
     }), t.default = o;
-    var r = i(/* @__PURE__ */ R()), n = i(/* @__PURE__ */ de());
+    var r = i(/* @__PURE__ */ q()), n = i(/* @__PURE__ */ de());
     function i(l) {
       return l && l.__esModule ? l : { default: l };
     }
@@ -364,15 +364,15 @@ function Ee() {
       });
     }
     e.exports = t.default, e.exports.default = t.default;
-  })(q, q.exports)), q.exports;
+  })(R, R.exports)), R.exports;
 }
-var P = { exports: {} }, ue;
+var V = { exports: {} }, ue;
 function Ne() {
   return ue || (ue = 1, (function(e, t) {
     Object.defineProperty(t, "__esModule", {
       value: !0
     }), t.default = h;
-    var r = n(/* @__PURE__ */ R());
+    var r = n(/* @__PURE__ */ q());
     function n(d) {
       return d && d.__esModule ? d : { default: d };
     }
@@ -396,7 +396,7 @@ function Ne() {
       });
     }
     e.exports = t.default, e.exports.default = t.default;
-  })(P, P.exports)), P.exports;
+  })(V, V.exports)), V.exports;
 }
 var se;
 function Ae() {
@@ -404,7 +404,7 @@ function Ae() {
     Object.defineProperty(t, "__esModule", {
       value: !0
     }), t.default = B;
-    var r = u(/* @__PURE__ */ R()), n = u(/* @__PURE__ */ Oe()), i = u(/* @__PURE__ */ De()), s = u(/* @__PURE__ */ Ee()), o = u(/* @__PURE__ */ Ne()), l = u(/* @__PURE__ */ de());
+    var r = u(/* @__PURE__ */ q()), n = u(/* @__PURE__ */ Oe()), i = u(/* @__PURE__ */ De()), s = u(/* @__PURE__ */ Ee()), o = u(/* @__PURE__ */ Ne()), l = u(/* @__PURE__ */ de());
     function u(v) {
       return v && v.__esModule ? v : { default: v };
     }
@@ -427,8 +427,8 @@ function Ae() {
       if (_) {
         if (a === v)
           return !1;
-        var w = a.split('"').length === a.split('\\"').length;
-        if (!w)
+        var M = a.split('"').length === a.split('\\"').length;
+        if (!M)
           return !1;
       }
       return !0;
@@ -437,15 +437,15 @@ function Ae() {
       if ((0, r.default)(v), a = (0, l.default)(a, g), a.require_display_name || a.allow_display_name) {
         var _ = v.match(h);
         if (_) {
-          var w = _[1];
-          if (v = v.replace(w, "").replace(/(^<|>$)/g, ""), w.endsWith(" ") && (w = w.slice(0, -1)), !U(w))
+          var M = _[1];
+          if (v = v.replace(M, "").replace(/(^<|>$)/g, ""), M.endsWith(" ") && (M = M.slice(0, -1)), !U(M))
             return !1;
         } else if (a.require_display_name)
           return !1;
       }
       if (!a.ignore_max_length && v.length > L)
         return !1;
-      var X = v.split("@"), M = X.pop(), O = M.toLowerCase();
+      var X = v.split("@"), w = X.pop(), O = w.toLowerCase();
       if (a.host_blacklist.length > 0 && (0, n.default)(O, a.host_blacklist) || a.host_whitelist.length > 0 && !(0, n.default)(O, a.host_whitelist))
         return !1;
       var m = X.join("@");
@@ -463,21 +463,21 @@ function Ae() {
       }
       if (a.ignore_max_length === !1 && (!(0, i.default)(m, {
         max: 64
-      }) || !(0, i.default)(M, {
+      }) || !(0, i.default)(w, {
         max: 254
       })))
         return !1;
-      if (!(0, s.default)(M, {
+      if (!(0, s.default)(w, {
         require_tld: a.require_tld,
         ignore_max_length: a.ignore_max_length,
         allow_underscores: a.allow_underscores
       })) {
         if (!a.allow_ip_domain)
           return !1;
-        if (!(0, o.default)(M)) {
-          if (!M.startsWith("[") || !M.endsWith("]"))
+        if (!(0, o.default)(w)) {
+          if (!w.startsWith("[") || !w.endsWith("]"))
             return !1;
-          var $ = M.slice(1, -1);
+          var $ = w.slice(1, -1);
           if ($.length === 0 || !(0, o.default)($))
             return !1;
         }
@@ -495,18 +495,18 @@ function Ae() {
   })(T, T.exports)), T.exports;
 }
 var Te = /* @__PURE__ */ Ae();
-const Ve = /* @__PURE__ */ Ie(Te);
-var qe = "isEmail";
-function Pe(e, t) {
-  return typeof e == "string" && Ve(e, t);
+const Pe = /* @__PURE__ */ Ie(Te);
+var Re = "isEmail";
+function Ve(e, t) {
+  return typeof e == "string" && Pe(e, t);
 }
-function Re(e, t) {
+function qe(e, t) {
   return F({
-    name: qe,
+    name: Re,
     constraints: [e],
     validator: {
       validate: function(r, n) {
-        return Pe(r, n?.constraints[0]);
+        return Ve(r, n?.constraints[0]);
       },
       defaultMessage: S(function(r) {
         return r + "$property must be an email";
@@ -514,16 +514,16 @@ function Re(e, t) {
     }
   }, t);
 }
-var ke = "isDate";
-function Ce(e) {
+var Ce = "isDate";
+function ke(e) {
   return e instanceof Date && !isNaN(e.getTime());
 }
-function k(e) {
+function C(e) {
   return F({
-    name: ke,
+    name: Ce,
     validator: {
       validate: function(t, r) {
-        return Ce(t);
+        return ke(t);
       },
       defaultMessage: S(function(t) {
         return t + "$property must be a Date instance";
@@ -546,7 +546,7 @@ function Le(e, t) {
   }
   return Number.isFinite(e);
 }
-function C(e, t) {
+function k(e, t) {
   return e === void 0 && (e = {}), F({
     name: je,
     constraints: [e],
@@ -600,7 +600,7 @@ c([
   f()
 ], j.prototype, "refreshToken");
 c([
-  C(),
+  k(),
   f()
 ], j.prototype, "userId");
 c([
@@ -620,7 +620,7 @@ c([
   f()
 ], I.prototype, "token");
 c([
-  C(),
+  k(),
   f()
 ], I.prototype, "userId");
 c([
@@ -628,15 +628,15 @@ c([
   f()
 ], I.prototype, "name");
 c([
-  k(),
+  C(),
   f()
 ], I.prototype, "expiresAt");
 c([
-  k(),
+  C(),
   f()
 ], I.prototype, "createdAt");
 c([
-  k(),
+  C(),
   f()
 ], I.prototype, "updatedAt");
 class pe {
@@ -655,7 +655,7 @@ class He {
   userId;
 }
 c([
-  C(),
+  k(),
   f()
 ], He.prototype, "userId");
 class Q {
@@ -704,7 +704,7 @@ c([
   f()
 ], W.prototype, "token");
 c([
-  k(),
+  C(),
   f()
 ], W.prototype, "expiresAt");
 c([
@@ -716,7 +716,7 @@ class ve {
   redirect;
 }
 c([
-  C(),
+  k(),
   f()
 ], ve.prototype, "userId");
 c([
@@ -729,7 +729,7 @@ class G {
   password;
 }
 c([
-  Re(),
+  qe(),
   f()
 ], G.prototype, "email");
 c([
@@ -740,10 +740,30 @@ c([
   p(),
   f()
 ], G.prototype, "password");
+const We = {
+  Users: {
+    Read: "users.read",
+    Create: "users.create",
+    Update: "users.update",
+    Delete: "users.delete",
+    ManageRoles: "users.roles.update"
+  },
+  Roles: {
+    Read: "roles.read",
+    Create: "roles.create",
+    Update: "roles.update",
+    Delete: "roles.delete",
+    ManagePermissions: "roles.permissions.update"
+  },
+  Permissions: {
+    Read: "permissions.read"
+  }
+};
 export {
   G as CreateUserDto,
   pe as LoginDto,
   ve as LoginResponseDto,
+  We as PermissionSchema,
   ge as ResetConfirmDto,
   Qe as ResetRequestDto,
   W as ResetResponseDto,

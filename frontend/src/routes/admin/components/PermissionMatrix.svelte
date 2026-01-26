@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Permission } from '$lib/api/admin';
+  import * as Accordion from '$lib/components/ui/accordion';
 
   export let allPermissions: Permission[] = [];
   export let selectedPermissionIds: string[] = [];
@@ -34,34 +35,40 @@
   }
 </script>
 
-<div class="space-y-6">
-  {#each Object.entries(groupedPermissions) as [moduleName, permissions] (moduleName)}
-    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-      <div class="flex items-center justify-between mb-3 border-b pb-2">
-        <h3 class="text-sm font-bold uppercase text-gray-700">{moduleName}</h3>
-        <button 
-          on:click={() => toggleModule(moduleName)}
-          class="text-xs text-blue-600 hover:text-blue-800 font-medium"
-        >
-          Toggle All
-        </button>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {#each permissions as perm}
-          <label class="flex items-start space-x-2 cursor-pointer p-2 hover:bg-white rounded">
-            <input 
-              type="checkbox" 
-              checked={selectedPermissionIds.includes(perm.id)}
-              on:change={() => togglePermission(perm.id)}
-              class="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
-            />
-            <div class="flex flex-col">
-              <span class="text-sm font-medium text-gray-900">{perm.action}</span>
-              <span class="text-xs text-gray-500">{perm.description}</span>
-            </div>
-          </label>
-        {/each}
-      </div>
-    </div>
-  {/each}
+<div class="space-y-2">
+  <Accordion.Root type="multiple" class="w-full">
+    {#each Object.entries(groupedPermissions) as [moduleName, permissions] (moduleName)}
+        <Accordion.Item value={moduleName}>
+            <Accordion.Trigger class="hover:no-underline hover:bg-muted/50 px-2 rounded">
+                 <span class="text-sm font-bold uppercase text-foreground">{moduleName}</span>
+            </Accordion.Trigger>
+            <Accordion.Content class="px-2 pt-2 pb-4">
+                 <div class="flex justify-end mb-2">
+                    <button 
+                      onclick={() => toggleModule(moduleName)}
+                      class="text-xs text-primary hover:text-primary/90 font-medium"
+                    >
+                      Toggle All in {moduleName}
+                    </button>
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {#each permissions as perm}
+                      <label class="flex items-start space-x-2 cursor-pointer p-2 hover:bg-muted/50 rounded border border-transparent hover:border-border transition-colors">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedPermissionIds.includes(perm.id)}
+                          onchange={() => togglePermission(perm.id)}
+                          class="mt-0.5 rounded text-primary focus:ring-primary"
+                        />
+                        <div class="flex flex-col">
+                          <span class="text-sm font-medium text-foreground">{perm.action}</span>
+                          <span class="text-xs text-muted-foreground">{perm.description}</span>
+                        </div>
+                      </label>
+                    {/each}
+                 </div>
+            </Accordion.Content>
+        </Accordion.Item>
+    {/each}
+  </Accordion.Root>
 </div>

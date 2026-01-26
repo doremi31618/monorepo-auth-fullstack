@@ -1,3 +1,25 @@
+import { PermissionSchema } from '@share/contract';
+
+// Derive permissions from schema
+const permissions = [
+    // Users
+    { id: PermissionSchema.Users.Read, module: 'users', action: 'read', description: 'View users' },
+    { id: PermissionSchema.Users.Create, module: 'users', action: 'create', description: 'Create users' },
+    { id: PermissionSchema.Users.Update, module: 'users', action: 'update', description: 'Update users' },
+    { id: PermissionSchema.Users.Delete, module: 'users', action: 'delete', description: 'Delete users' },
+    { id: PermissionSchema.Users.ManageRoles, module: 'users', action: 'update_roles', description: 'Update user roles' },
+
+    // Roles
+    { id: PermissionSchema.Roles.Read, module: 'roles', action: 'read', description: 'View roles' },
+    { id: PermissionSchema.Roles.Create, module: 'roles', action: 'create', description: 'Create roles' },
+    { id: PermissionSchema.Roles.Update, module: 'roles', action: 'update', description: 'Update roles' },
+    { id: PermissionSchema.Roles.Delete, module: 'roles', action: 'delete', description: 'Delete roles' },
+    { id: PermissionSchema.Roles.ManagePermissions, module: 'roles', action: 'update_permissions', description: 'Update role permissions' },
+
+    // Permissions
+    { id: PermissionSchema.Permissions.Read, module: 'permissions', action: 'read', description: 'View permissions' },
+];
+
 export const ACCESS_CONTROL_CONFIG = {
     roles: [
         {
@@ -13,28 +35,11 @@ export const ACCESS_CONTROL_CONFIG = {
             isSystem: true,
         },
     ],
-    permissions: [
-        // User Management
-        { id: 'users.read', module: 'users', action: 'read', description: 'View users' },
-        { id: 'users.create', module: 'users', action: 'create', description: 'Create users' },
-        { id: 'users.update', module: 'users', action: 'update', description: 'Update users' },
-        { id: 'users.delete', module: 'users', action: 'delete', description: 'Delete users' },
-
-        // Role Management
-        { id: 'roles.read', module: 'roles', action: 'read', description: 'View roles' },
-        { id: 'roles.create', module: 'roles', action: 'create', description: 'Create roles' },
-        { id: 'roles.update', module: 'roles', action: 'update', description: 'Update roles' },
-        { id: 'roles.delete', module: 'roles', action: 'delete', description: 'Delete roles' },
-
-        // Extended Permissions
-        { id: 'roles.permissions.update', module: 'roles', action: 'update_permissions', description: 'Update role permissions' },
-        { id: 'users.roles.update', module: 'users', action: 'update_roles', description: 'Update user roles' },
-        { id: 'permissions.read', module: 'permissions', action: 'read', description: 'View permissions' },
-    ],
+    permissions,
     // Map roles to permissions
     rolePermissions: {
-        'admin': ['*'], // '*' means all permissions
-        'user': ['users.read'],
+        'admin': ['*'] as string[], // '*' means all permissions
+        'user': [PermissionSchema.Users.Read] as string[],
     },
     rootAdmin: {
         email: 'admin@system.com',

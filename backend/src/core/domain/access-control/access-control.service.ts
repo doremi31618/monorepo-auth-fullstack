@@ -79,10 +79,20 @@ export class AccessControlService implements OnModuleInit {
     }
 
     async updateRole(id: string, data: { name?: string; description?: string }) {
+        // Prevent updating system roles
+        const role = await this.repository.findRoleById(id);
+        if (role?.isSystem) {
+            throw new Error('Cannot modify system roles');
+        }
         return this.repository.updateRole(id, data);
     }
 
     async deleteRole(id: string) {
+        // Prevent deleting system roles
+        const role = await this.repository.findRoleById(id);
+        if (role?.isSystem) {
+            throw new Error('Cannot delete system roles');
+        }
         return this.repository.deleteRole(id);
     }
 
@@ -114,11 +124,61 @@ export class AccessControlService implements OnModuleInit {
         return this.repository.getUsers(options);
     }
 
-    async updateUser(id: number, data: { name?: string; email?: string }) {
-        return this.repository.updateUser(id, data);
+    async updateUser(id: number, data: { name?: string; email?: string; roleIds?: string[] }) {
+        // Prevent updating root admin (system admin)
+        const user = await this.repository.findUserById(id);
+        if (user?.email === 'admin@system.com') {
+            throw new Error('Cannot modify root admin user');
+        }
+
+        if (data.roleIds) {
+            // Smart sync: get current roles, then add/remove only differences
+            const currentRoles = await this.repository.getUserRoles(id);
+            const currentRoleIds = currentRoles.map(r => r.id);
+            const newRoleIds = data.roleIds;
+
+            // Remove roles that are no longer assigned
+            const rolesToRemove = currentRoleIds.filter(roleId => !newRoleIds.includes(roleId));
+            for (const roleId of rolesToRemove) {
+                await this.repository.removeRoleFromUser(id, roleId);
+            }
+
+            // Add new roles
+            const rolesToAdd = newRoleIds.filter(roleId => !currentRoleIds.includes(roleId));
+            for (const roleId of rolesToAdd) {
+                await this.repository.assignRoleToUser(id, roleId);
+            }
+        }
+        return this.repository.updateUser(id, { name: data.name, email: data.email });
     }
 
     async getUserProfile(userId: number) {
         return this.repository.findUserById(userId);
+    }
+
+    async createUser(data: any) {
+        const [user] = await this.repository.createUser(data);
+
+        // Assign roles if provided
+        if (data.roleIds && Array.isArray(data.roleIds)) {
+            for (const roleId of data.roleIds) {
+                await this.repository.assignRoleToUser(user.id, roleId);
+            }
+        }
+
+        return user;
+    }
+
+    async deleteUser(userId: number) {
+        // Prevent deleting root admin (system admin)
+        const user = await this.repository.findUserById(userId);
+        if (user?.email === 'admin@system.com') {
+            throw new Error('Cannot delete root admin user');
+        }
+        return this.repository.deleteUser(userId);
+    }
+
+    async removeRoleFromUser(userId: number, roleId: string) {
+        return this.repository.removeRoleFromUser(userId, roleId);
     }
 }
