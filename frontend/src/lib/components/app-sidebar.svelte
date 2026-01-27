@@ -10,10 +10,12 @@
 					{
 						title: "Installation",
 						url: "#",
+                        isActive: true
 					},
 					{
 						title: "Project Structure",
 						url: "#",
+                        isActive: false
 					},
 				],
 			},

@@ -1,6 +1,6 @@
-
-import { HttpClient } from './httpClient.js';
+import { HttpClient, type ApiResponse } from './httpClient.js';
 
 export {
-    HttpClient
+    HttpClient,
+    type ApiResponse
 }

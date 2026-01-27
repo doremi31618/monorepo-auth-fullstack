@@ -59,7 +59,7 @@ export class SchedulingService implements JobSchedulerPort, OnModuleInit {
             }
 
             // get job handler
-            let jobName = job[0].name;
+            const jobName = job[0].name;
             this.logger.log(`Processing ${jobName} at ${job[0].runAt}`);
             if (!this.JobHandler.has(jobName)) {
                 this.logger.error(`No handler for ${jobName}`);

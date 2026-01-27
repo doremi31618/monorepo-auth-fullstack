@@ -73,4 +73,7 @@ export class UserRepository extends BaseRepository {
 			});
 		return updated ?? null;
 	}
+	async updateUser(id: number, data: Partial<CreateUserDto>) {
+		return this.db.update(schema.users).set(data).where(eq(schema.users.id, id)).returning();
+	}
 }

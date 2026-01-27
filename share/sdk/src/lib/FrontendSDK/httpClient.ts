@@ -1,5 +1,13 @@
-import { type ApiResponse } from '@share/contract';
+// import { type ApiResponse } from '@share/contract';
 import StorageService from "./storageService.js";
+
+export type ApiResponse<T> = {
+    data?: T;
+    message?: string;
+    statusCode?: number;
+    success?: boolean;
+    error?: string;
+}
 
 export type HttpClientOptions<T> = {
     useLocalStorage?: boolean;
@@ -165,7 +173,6 @@ export class HttpClient<T = { token?: string }> {
             const { body: data, parsed } = await this.safeParse<ApiResponse<R>>(res);
             const isUnauthorized =
                 res.status === 401 || data?.statusCode === 401 || data?.error === 'Unauthorized';
-
             if (isUnauthorized) {
                 try {
                     const newToken = await this.refreshToken();

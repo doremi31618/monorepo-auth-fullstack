@@ -14,6 +14,7 @@
 - **語言**：TypeScript，使用 `ts-node` 於開發環境執行。
 - **資料庫**：PostgreSQL，透過 Drizzle ORM 操作。
 - **驗證/安全**：`bcrypt` 處理密碼雜湊，`crypto.randomUUID()` 生成 session token。
+- **權限控管**：RBAC Level 1 (Flat)，使用 NestJS Guards + Custom Decorators (`@RequirePermissions`)。
 - **背景工作**：`@nestjs/schedule` 執行 session 清理 cron。
 - **文件**：`@nestjs/swagger` 產生 OpenAPI (`/openapi`)。
 
@@ -64,6 +65,10 @@ backend/src
   - `ResponseInterceptor`：在所有 controller 回傳前包裝資料，維持前後端契約一致。
 - **MailModule**
   - 範例 SES / Nodemailer 整合與 `RUN_SMTP_TEST` 控制的測試腳本。
+- **AccessControlModule (RBAC)**
+  - `AccessControlService`：負責 Roles 與 Permissions 的 CRUD 及初始化 Seeding。
+  - `RBACGuard`：配合 `@RequirePermissions` Decorator 實作路由權限攔截。
+  - `AccessControlRepository`：管理 RBAC 相關資料表 (`roles`, `permissions`, `user_roles`)。
 
 ---
 

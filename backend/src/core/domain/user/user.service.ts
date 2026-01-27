@@ -6,7 +6,7 @@ import type { IUserService } from './user.interface.js';
 @Injectable()
 export class UserService implements IUserService {
 	constructor(private readonly userRepository: UserRepository) { }
-	
+
 	async createUser(user: CreateUserDto) {
 		return this.userRepository.createUser(user);
 	}
@@ -17,6 +17,10 @@ export class UserService implements IUserService {
 
 	async getUserByEmail(email: string) {
 		return this.userRepository.getUserByEmail(email);
+	}
+
+	async updateUser(id: number, data: Partial<CreateUserDto>) {
+		return this.userRepository.updateUser(id, data);
 	}
 
 	async updatePassword(userId: number, newPassword: string) {

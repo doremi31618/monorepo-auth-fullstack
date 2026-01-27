@@ -34,7 +34,9 @@ class StorageService<T> {
     }
 
     public remove() {
-        localStorage.removeItem(this.STORAGE_KEY);
+        if (this.useLocalStorage) {
+            window.localStorage.removeItem(this.STORAGE_KEY);
+        }
     }
 }
 

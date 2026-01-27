@@ -86,7 +86,7 @@
 				<Input id="email-{id}" bind:value={email} type="email" placeholder="m@example.com" required />
 			</Field.Field>
 			{#if errorMsg}
-				<Field.Description class="text-red-500">{errorMsg}</Field.Description>
+				<Field.Description class="text-destructive">{errorMsg}</Field.Description>
 			{/if}
 			<Field.Field>
 				<Button type="submit" onclick={handleSubmit} disabled={isLoading}>

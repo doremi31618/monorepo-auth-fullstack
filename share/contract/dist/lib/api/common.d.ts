@@ -1,9 +1,9 @@
-export type ApiResponse<T> = {
-    error?: string | null;
-    statusCode: number;
-    message: string;
-    data?: T | null;
-    timestamp?: string;
-    path?: string;
-};
+export interface PaginatedResponse<T> {
+    data: T[];
+    meta: {
+        total: number;
+        page: number;
+        limit: number;
+    };
+}
 //# sourceMappingURL=common.d.ts.map

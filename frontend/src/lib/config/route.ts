@@ -12,7 +12,10 @@ export const appRoutePath = {
     },
     user: {
         home: '/user/home',
+    },
+    admin: {
+        dashboard: '/admin',
+        users: '/admin/users',
+        roles: '/admin/roles',
     }
-    
-
 } as const;

@@ -16,9 +16,16 @@ const TOKEN_TYPE = {
 	RESET: 'reset_password'
 } as const;
 
+import { LoggerService } from '../../infra/logger/logger.service.js';
+
 @Injectable()
 export class SessionRepository {
-	constructor(@Inject('DB') private readonly db: DB) { }
+	constructor(
+		@Inject('DB') private readonly db: DB,
+		private readonly logger: LoggerService
+	) {
+		this.logger.setContext(SessionRepository.name);
+	}
 
 	async deleteRefreshToken(refreshToken: string) {
 		try {
@@ -31,7 +38,7 @@ export class SessionRepository {
 				});
 			return deletedRefreshToken[0] ?? null;
 		} catch (error) {
-			console.error('deleteRefreshToken failed', error);
+			this.logger.error('deleteRefreshToken failed', error);
 			throw error;
 		}
 	}
@@ -43,7 +50,7 @@ export class SessionRepository {
 				.where(eq(schema.authTokens.token, refreshToken));
 			return userId[0] ?? null;
 		} catch (error) {
-			console.error('getUserIdByRefreshToken failed', error);
+			this.logger.error('getUserIdByRefreshToken failed', error);
 			throw error;
 		}
 	}
@@ -55,7 +62,7 @@ export class SessionRepository {
 				.where(eq(schema.authTokens.token, sessionToken));
 			return userId[0] ?? null;
 		} catch (error) {
-			console.error('getUserIdByToken failed', error);
+			this.logger.error('getUserIdByToken failed', error);
 			throw error;
 		}
 	}
@@ -66,7 +73,7 @@ export class SessionRepository {
 			const deletedRefreshTokens = await this.deleteRefreshTokens(userId);
 			return { deletedSession, deletedRefreshTokens };
 		} catch (error) {
-			console.error('deleteSessionAndRefreshTokens failed', error);
+			this.logger.error('deleteSessionAndRefreshTokens failed', error);
 			throw error;
 		}
 	}
@@ -81,7 +88,7 @@ export class SessionRepository {
 				});
 			return deletedRefreshTokens[0] ?? null;
 		} catch (error) {
-			console.error('deleteExpiredRefreshTokens failed', error);
+			this.logger.error('deleteExpiredRefreshTokens failed', error);
 			throw error;
 		}
 	}
@@ -103,7 +110,7 @@ export class SessionRepository {
 				});
 			return newRefreshToken[0] ?? null;
 		} catch (error) {
-			console.error('createRefreshToken failed', error);
+			this.logger.error('createRefreshToken failed', error);
 			throw error;
 		}
 	}
@@ -121,7 +128,7 @@ export class SessionRepository {
 				);
 			return token[0] ?? null;
 		} catch (error) {
-			console.error('getSessionByToken failed', error);
+			this.logger.error('getSessionByToken failed', error);
 			throw error;
 		}
 	}
@@ -144,7 +151,7 @@ export class SessionRepository {
 				});
 			return newSession;
 		} catch (error) {
-			console.error('createSession failed', error);
+			this.logger.error('createSession failed', error);
 			throw error;
 		}
 	}
@@ -161,7 +168,7 @@ export class SessionRepository {
 			}
 			return deletedSession[0] ?? null;
 		} catch (error) {
-			console.error('deleteSessionByUserId failed', error);
+			this.logger.error('deleteSessionByUserId failed', error);
 			throw error;
 		}
 	}
@@ -176,7 +183,7 @@ export class SessionRepository {
 				});
 			return deletedSession[0] ?? null;
 		} catch (error) {
-			console.error('deleteSession failed', error);
+			this.logger.error('deleteSession failed', error);
 			throw error;
 		}
 	}
@@ -193,14 +200,14 @@ export class SessionRepository {
 				});
 			return deletedRefreshTokens[0] ?? null;
 		} catch (error) {
-			console.error('deleteExpiredRefreshTokens failed', error);
+			this.logger.error('deleteExpiredRefreshTokens failed', error);
 			throw error;
 		}
 	}
 
 	async cleanupExpiredSessions() {
 		try {
-			console.info('cleanupExpiredSessions started');
+			this.logger.log('cleanupExpiredSessions started');
 			const deletedSessions = await this.db
 				.delete(schema.authTokens)
 				.where(
@@ -211,7 +218,7 @@ export class SessionRepository {
 				});
 			return `clean up ${deletedSessions.length} sessions`;
 		} catch (error) {
-			console.error('cleanupExpiredSessions failed', error);
+			this.logger.error('cleanupExpiredSessions failed', error);
 			throw error;
 		}
 	}
@@ -227,7 +234,7 @@ export class SessionRepository {
 					)
 				);
 		} catch (error) {
-			console.error('deleteResetTokensByUser failed', error);
+			this.logger.error('deleteResetTokensByUser failed', error);
 			throw error;
 		}
 	}
@@ -238,7 +245,7 @@ export class SessionRepository {
 				.delete(schema.authTokens)
 				.where(eq(schema.authTokens.userId, userId));
 		} catch (error) {
-			console.error('deleteAllTokensByUser failed', error);
+			this.logger.error('deleteAllTokensByUser failed', error);
 			throw error;
 		}
 	}
@@ -261,7 +268,7 @@ export class SessionRepository {
 				});
 			return token;
 		} catch (error) {
-			console.error('createResetToken failed', error);
+			this.logger.error('createResetToken failed', error);
 			throw error;
 		}
 	}
@@ -282,7 +289,7 @@ export class SessionRepository {
 				});
 			return row ?? null;
 		} catch (error) {
-			console.error('consumeResetToken failed', error);
+			this.logger.error('consumeResetToken failed', error);
 			throw error;
 		}
 	}

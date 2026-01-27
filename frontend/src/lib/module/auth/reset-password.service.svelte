@@ -3,6 +3,7 @@
 	import { goto } from "$app/navigation";
 	import { page } from "$app/stores";
 	import * as authApi from "$lib/api/auth";
+    import { appRoutePath } from "$lib/config/route";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import * as Field from "$lib/components/ui/field/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
@@ -35,7 +36,7 @@
 				throw new Error(res.message ?? "Reset failed");
 			}
 			successMsg = "Password reset successful. You can now log in.";
-			const next = res.data?.redirect ?? "/auth/login";
+			const next = res.data?.redirect ?? appRoutePath.auth.login;
 			await goto(next);
 		} catch (err) {
 			errorMsg = (err as Error)?.message ?? "Failed to reset password";
@@ -79,10 +80,10 @@
 			/>
 		</Field.Field>
 		{#if errorMsg}
-			<Field.Description class="text-red-500">{errorMsg}</Field.Description>
+			<Field.Description class="text-destructive">{errorMsg}</Field.Description>
 		{/if}
 		{#if successMsg}
-			<Field.Description class="text-green-600">{successMsg}</Field.Description>
+			<Field.Description class="text-primary">{successMsg}</Field.Description>
 		{/if}
 		<Button type="submit" onclick={handleSubmit} disabled={isLoading}>
 			{#if isLoading}Submitting...{:else}Reset Password{/if}
