@@ -164,7 +164,6 @@ export class HttpClient<T = { token?: string }> {
     private async request<R>(path: string, options: RequestInit = {}): Promise<ApiResponse<R>> {
         try {
             const res = await this.rawRequest(path, options);
-            console.log("debug 1: ", res);
 
             if (res.ok) {
                 const { body } = await this.safeParse<ApiResponse<R>>(res);

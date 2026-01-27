@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from './../src/app.module';
 
 describe('AppController (e2e)', () => {
@@ -12,6 +12,7 @@ describe('AppController (e2e)', () => {
 		}).compile();
 
 		app = moduleFixture.createNestApplication();
+		app.setGlobalPrefix('v1');
 		await app.init();
 	});
 
@@ -19,6 +20,8 @@ describe('AppController (e2e)', () => {
 		return request(app.getHttpServer())
 			.get('/v1/')
 			.expect(200)
-			.expect('Hello World!');
+			.expect((res) => {
+				if (res.body.data !== 'Hello World!') throw new Error('Response body data mismatch');
+			});
 	});
 });

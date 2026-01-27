@@ -102,14 +102,14 @@ All core acceptance criteria have been met:
 
 **Strategy A: Admin Panel Foundation (Frontend)**
  • [x] Setup `/admin` layout (Sidebar, Topbar).
- • [ ] Define Navigation Config (JSON/TS).
+ • [x] Define Navigation Config (JSON/TS).
  • [x] Implement Protected Route Guard (require Admin role).
 
 **Strategy B: RBAC Data Model (Backend)**
  • [x] Create tables: `roles`, `permissions`, `user_roles`, `role_permissions`.
  • [x] Implement Drizzle entities & relations.
  • [x] Write Seed Script (Superadmin, Default Roles, Schema-based Permissions).
- • [ ] Create `system_i18n_keys` table (key, locale, value) for static UI translation.
+ • [x] Create `system_i18n_keys` table (key, locale, value) for static UI translation.
 
 **Strategy C: RBAC Core Infrastructure (Backend)**
  • [x] Implement `@Permission()` decorator.
@@ -135,9 +135,9 @@ All core acceptance criteria have been met:
  • [x] **Permissions UI**: Multi-select/Tree view for assigning permissions to roles.
 
 **Strategy G: Permission Schema & Automation**
- • [ ] Define `PERMISSION_SCHEMA` constant (include `labelKey` for i18n).
- • [ ] Auto-generate TypeScript enums/types from schema.
- • [ ] Ensure Seed script syncs DB with Schema.
+ • [x] Define `PERMISSION_SCHEMA` constant (include `labelKey` for i18n).
+ • [x] Auto-generate TypeScript enums/types from schema.
+ • [x] Ensure Seed script syncs DB with Schema.
 
 **Strategy H: Documentation & DX**
  • [x] Write RBAC Integration Guide (How to add new permissions).
