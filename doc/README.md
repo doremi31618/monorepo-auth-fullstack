@@ -38,6 +38,7 @@
     - **Product Spec**: `product-spec.md` (機能與 UI 流程)
     - **Technical Spec**: `technical-spec.md` (Schema API 架構)
     - **Implementation Guide**: `implementation-guide.md` (實作步驟)
+    - **Architecture Constitution**: `system-spec/architecture/` 為專案憲法，任何設計與開發必須遵守其內原則。
 
 
 ### 5. `onboarding/` (Team Setup)

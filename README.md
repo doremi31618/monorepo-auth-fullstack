@@ -28,6 +28,12 @@ Opinionated full-stack system template (SvelteKit + NestJS + Drizzle/PostgreSQL)
 - `doc/` – Architecture notes and developer runbooks (`frontend-architect.md`, `how-to-start-dev-env.md`)
 - `docker-compose.yml` – Spins up frontend, backend, and PostgreSQL for local development
 
+## Architecture Constitution
+
+`doc/system-spec/architecture/` is the project constitution. All design and development must follow
+the principles defined in that folder, with `PLATFORM_CHARTER.md` as the decision firewall for what
+does or does not belong in the platform.
+
 ## Getting Started
 
 Step-by-step instructions for launching the development environment (Docker Compose, frontend-only, backend-only) live in `doc/how-to-start-dev-env.md`. The short version:
